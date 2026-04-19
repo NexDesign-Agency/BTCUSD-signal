@@ -517,3 +517,98 @@ h1, h2, h3 {
   min-height: 500px;
   background: var(--chart-bg);
 }
+
+/* === HEDGE Signal Badge === */
+.signal-badge.hedge {
+  background: rgba(255, 170, 0, 0.2);
+  color: #ffaa00;
+  border-color: #ffaa00;
+  animation: pulse-hedge 1.5s infinite;
+}
+
+@keyframes pulse-hedge {
+  0% { box-shadow: 0 0 0 0 rgba(255, 170, 0, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(255, 170, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 170, 0, 0); }
+}
+
+/* === Hedge Card === */
+.card-hedge {
+  border-color: rgba(255, 170, 0, 0.5);
+  background: rgba(255, 170, 0, 0.08);
+  box-shadow: 0 0 15px rgba(255, 170, 0, 0.1);
+}
+
+.card-hedge .card-instruction {
+  color: #ffaa00;
+}
+
+.card-dir-badge.hedge { color: #ffaa00 !important; }
+.ez-val.hedge { color: #ffaa00 !important; }
+.type-val.hedge { color: #ffaa00 !important; }
+
+.badge-hedge {
+  background: rgba(255, 170, 0, 0.25);
+  color: #ffaa00;
+}
+
+/* === Waiting Card === */
+.card-waiting {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 1rem;
+  text-align: center;
+}
+
+.card-waiting .card-note {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  border-top: none;
+}
+
+/* === Zone Proximity Display === */
+.zone-proximity-display {
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  border: 1px solid #222;
+}
+
+.zone-status-display {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: var(--text-secondary);
+}
+
+.zone-status-display.zone-support {
+  color: var(--neon-green);
+}
+
+.zone-status-display.zone-resistance {
+  color: var(--signal-red);
+}
+
+.zone-status-display.zone-approaching {
+  color: #ffaa00;
+}
+
+.zone-status-display.zone-between {
+  color: var(--text-secondary);
+}
+
+/* === Confidence Reasoning Colors === */
+.reasoning-list li.conf-positive {
+  color: var(--neon-green);
+  font-size: 0.72rem;
+}
+
+.reasoning-list li.conf-wait {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* === Lean Trend Styling === */
+.trend-val.LEAN_BULL { color: rgba(0, 255, 65, 0.6); }
+.trend-val.LEAN_BEAR { color: rgba(255, 7, 58, 0.6); }

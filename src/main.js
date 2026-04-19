@@ -159,34 +159,17 @@ function initializeUI() {
 }
 
 let previousSignal = 'WAIT';
-let alertCycleCount = 0;
-let alertTimer = null;
-let lastAlertedConfidence = 0;
-const MAX_ALERT_PLAYS = 3;
-const ALERT_INTERVAL_MS = 5000; // 5s between alerts → ~15s total
+let lastAlertedSignalDirection = null; // Track direction for re-alert control
 
-function clearAlertCycle() {
-  if (alertTimer) { clearInterval(alertTimer); alertTimer = null; }
-  alertCycleCount = 0;
-}
-
-function startAlertCycle(signal, confidence) {
-  clearAlertCycle();
-  lastAlertedConfidence = confidence;
-  alertCycleCount = 0;
-
-  const doAlert = () => {
-    alertCycleCount++;
+// Single-play alert: beep + voice ONCE only
+function playSignalAlert(signal, confidence, isHedge = false) {
+  if (isHedge) {
+    playHedgeAlertSound();
+    setTimeout(() => playVoiceAlert(`Warning. Hedge signal. Flip to ${signal}. Confidence ${confidence} percent.`), 400);
+  } else {
     playAlertSound();
     setTimeout(() => playVoiceAlert(`${signal} Signal Active. Confidence ${confidence} percent.`), 300);
-    if (alertCycleCount >= MAX_ALERT_PLAYS) clearAlertCycle();
-  };
-
-  doAlert(); // Immediate first play
-  alertTimer = setInterval(() => {
-    if (alertCycleCount >= MAX_ALERT_PLAYS) { clearAlertCycle(); return; }
-    doAlert();
-  }, ALERT_INTERVAL_MS);
+  }
 }
 
 function startEngine() {
@@ -219,15 +202,16 @@ function startEngine() {
     const sigResult = SignalEngine.calculateSignal(signalMap);
     UIManager.updateSignal(sigResult);
     
-    // Update Chart: single latest signal marker only (no spam)
+    // Update Chart: signal marker when entering new signal
     if (sigResult.signal !== 'WAIT' && previousSignal === 'WAIT') {
       const now = Math.floor(Date.now() / 1000);
+      const isHedge = sigResult.hedge !== null;
       chartApp.setMarkers([{
         time: now,
         position: sigResult.signal === 'BUY' ? 'belowBar' : 'aboveBar',
-        color: sigResult.signal === 'BUY' ? '#00ff41' : '#ff073a',
+        color: isHedge ? '#ffaa00' : (sigResult.signal === 'BUY' ? '#00ff41' : '#ff073a'),
         shape: sigResult.signal === 'BUY' ? 'arrowUp' : 'arrowDown',
-        text: sigResult.signal
+        text: isHedge ? `HEDGE ${sigResult.signal}` : sigResult.signal
       }]);
     }
 
@@ -239,21 +223,23 @@ function startEngine() {
     // UI Matrix update
     UIManager.updateMatrix(signalMap, sigResult.trends);
 
-    // --- Smart Voice Alert System (max 3x, ~15 detik total) ---
+    // --- Voice Alert: ONCE per direction change ---
     if (sigResult.signal !== 'WAIT') {
-      if (previousSignal === 'WAIT') {
-        // New signal activation → start alert cycle
-        startAlertCycle(sigResult.signal, sigResult.confidence);
+      const isHedge = sigResult.hedge !== null;
+      const directionChanged = lastAlertedSignalDirection !== sigResult.signal;
+
+      if (previousSignal === 'WAIT' || directionChanged) {
+        // New signal or direction flip → alert ONCE
+        playSignalAlert(sigResult.signal, sigResult.confidence, isHedge);
+        lastAlertedSignalDirection = sigResult.signal;
         
         if (Notification.permission === 'granted') {
-          new Notification(`🔥 BTC ${sigResult.signal} SIGNAL!`, {
-            body: `Confidence: ${sigResult.confidence}%`,
+          const title = isHedge ? `⚠️ HEDGE → ${sigResult.signal}!` : `🔥 BTC ${sigResult.signal} SIGNAL!`;
+          new Notification(title, {
+            body: `Confidence: ${sigResult.confidence}% | ${sigResult.orderType}`,
             icon: '/favicon.ico'
           });
         }
-      } else if (Math.abs(sigResult.confidence - lastAlertedConfidence) >= 5) {
-        // Confidence changed significantly → restart alert cycle
-        startAlertCycle(sigResult.signal, sigResult.confidence);
       }
 
       // Log signal (deduplicated by minute)
@@ -269,11 +255,11 @@ function startEngine() {
           tp2: primary ? primary.tp2 : 0,
           time: Date.now(), status: 'OPEN'
         });
-        UIManager.log(`SIGNAL ACTIVE: ${sigResult.signal} (${sigResult.confidence}%)`);
+        const prefix = sigResult.hedge ? '⚠️ HEDGE' : '🎯 SIGNAL';
+        UIManager.log(`${prefix}: ${sigResult.signal} (${sigResult.confidence}%) — ${sigResult.orderType}`);
       }
     } else {
-      // Signal back to WAIT → stop any running alerts
-      clearAlertCycle();
+      lastAlertedSignalDirection = null;
     }
 
     previousSignal = sigResult.signal;
@@ -295,6 +281,24 @@ function playAlertSound() {
   gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
   osc.start(audioCtx.currentTime);
   osc.stop(audioCtx.currentTime + 0.5);
+}
+
+function playHedgeAlertSound() {
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  // Double-beep at higher pitch for urgency
+  [0, 0.3].forEach(offset => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(1600, audioCtx.currentTime + offset);
+    gain.gain.setValueAtTime(0, audioCtx.currentTime + offset);
+    gain.gain.linearRampToValueAtTime(0.4, audioCtx.currentTime + offset + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + offset + 0.2);
+    osc.start(audioCtx.currentTime + offset);
+    osc.stop(audioCtx.currentTime + offset + 0.2);
+  });
 }
 
 function playVoiceAlert(text) {

@@ -18,8 +18,9 @@ export const UIManager = {
     const panel = document.querySelector('.final-signal-panel');
     if (!badge || !panel) return;
 
-    badge.className = 'signal-badge ' + signalData.signal.toLowerCase();
-    badge.innerText = signalData.signal;
+    const isHedge = signalData.hedge !== null && signalData.hedge !== undefined;
+    badge.className = 'signal-badge ' + (isHedge ? 'hedge' : signalData.signal.toLowerCase());
+    badge.innerText = isHedge ? `HEDGE → ${signalData.signal}` : signalData.signal;
 
     // Confidence Level
     const confVal = document.getElementById('conf-value');
@@ -27,38 +28,77 @@ export const UIManager = {
     if (confVal && confBar) {
       confVal.innerText = `${signalData.confidence}%`;
       confBar.style.width = `${signalData.confidence}%`;
+      // Color: red < 60, yellow 60-79, green 80+
+      if (signalData.confidence >= 80) {
+        confBar.style.background = 'linear-gradient(90deg, #00ff41, #00cc33)';
+      } else if (signalData.confidence >= 60) {
+        confBar.style.background = 'linear-gradient(90deg, #ffaa00, #ff8800)';
+      } else {
+        confBar.style.background = 'linear-gradient(90deg, #ff073a, #cc0000)';
+      }
     }
 
-    // Pending Order Details
+    // Order Type / Status
     const orderTypeEl = document.getElementById('order-type');
     orderTypeEl.innerText = signalData.orderType || '--';
-    orderTypeEl.className = 'value type-val ' + (signalData.signal === 'BUY' ? 'bull' : (signalData.signal === 'SELL' ? 'bear' : ''));
+    orderTypeEl.className = 'value type-val ' + (isHedge ? 'hedge' : (signalData.signal === 'BUY' ? 'bull' : (signalData.signal === 'SELL' ? 'bear' : '')));
 
-    // Inject Primary + Alternative Entry Cards
+    // Zone Proximity Status
+    const zoneStatusEl = document.getElementById('zone-status');
+    if (zoneStatusEl && signalData.zoneProximity) {
+      const zp = signalData.zoneProximity;
+      let statusText = '';
+      let statusClass = '';
+      
+      if (zp.status === 'AT_ZONE') {
+        statusText = `📍 AT ${zp.zone.type} — $${zp.zone.price.toFixed(0)} (${zp.zone.strength})`;
+        statusClass = zp.zone.type === 'SUPPORT' ? 'zone-support' : 'zone-resistance';
+      } else if (zp.status === 'APPROACHING') {
+        statusText = `→ APPROACHING ${zp.zone.type} — $${zp.zone.price.toFixed(0)}`;
+        statusClass = 'zone-approaching';
+      } else if (zp.status === 'BETWEEN_ZONES') {
+        const sText = zp.nearestSupport ? `S: $${zp.nearestSupport.price.toFixed(0)}` : '';
+        const rText = zp.nearestResistance ? `R: $${zp.nearestResistance.price.toFixed(0)}` : '';
+        statusText = `↔ Between Zones | ${sText} — ${rText}`;
+        statusClass = 'zone-between';
+      } else {
+        statusText = '⏳ Scanning zones...';
+        statusClass = '';
+      }
+      
+      zoneStatusEl.innerText = statusText;
+      zoneStatusEl.className = `zone-status-display ${statusClass}`;
+    }
+
+    // Inject Primary + Hedge + Alternative Entry Cards
     const cardsContainer = document.getElementById('entry-cards-container');
     if (cardsContainer && signalData.entryOptions && signalData.entryOptions.length > 0) {
       cardsContainer.innerHTML = signalData.entryOptions.map(opt => {
         if (!opt) return '';
         const isBuy = opt.id === 'BUY';
+        const isHedgeCard = opt.style === 'HEDGE';
         const isPrimary = opt.style === 'PRIMARY';
         const dirClass = isBuy ? 'bull' : 'bear';
-        const strengthBadge = opt.strength === 'STRONG' ? 'badge-strong' :
-                              opt.strength === 'HIGH' ? 'badge-high' :
-                              opt.strength === 'MEDIUM' ? 'badge-medium' : 'badge-cond';
 
-        let cardClass = isPrimary
-          ? (isBuy ? 'card-primary-buy' : 'card-primary-sell')
-          : 'card-alt';
+        const strengthBadge = opt.strength === 'STRONG' ? 'badge-strong' :
+                              opt.strength === 'MODERATE' ? 'badge-high' :
+                              opt.strength === 'HEDGE' ? 'badge-hedge' :
+                              opt.strength === 'WEAK' ? 'badge-medium' : 'badge-cond';
+
+        let cardClass = isHedgeCard ? 'card-hedge' :
+          isPrimary ? (isBuy ? 'card-primary-buy' : 'card-primary-sell') : 'card-alt';
+
+        const icon = isHedgeCard ? '⚠️' : (isPrimary ? (isBuy ? '▲' : '▼') : '↻');
 
         return `
           <div class="entry-card ${cardClass}">
             <div class="card-head">
-              <span class="card-dir-badge ${dirClass}">${isPrimary ? (isBuy ? '▲' : '▼') : '↻'} ${opt.label}</span>
+              <span class="card-dir-badge ${isHedgeCard ? 'hedge' : dirClass}">${icon} ${opt.label}</span>
               <span class="strength-badge ${strengthBadge}">${opt.strength}</span>
             </div>
             <div class="entry-zone-box">
-              <span class="ez-label">${isPrimary ? 'ENTRY ZONE' : 'ENTRY'}</span>
-              <span class="ez-val ${dirClass}">$${opt.entryLow ? opt.entryLow.toFixed(0) : '--'} – $${opt.entryHigh ? opt.entryHigh.toFixed(0) : '--'}</span>
+              <span class="ez-label">${isHedgeCard ? 'HEDGE ENTRY' : 'ENTRY ZONE'}</span>
+              <span class="ez-val ${isHedgeCard ? 'hedge' : dirClass}">$${opt.entryLow ? opt.entryLow.toFixed(0) : '--'} – $${opt.entryHigh ? opt.entryHigh.toFixed(0) : '--'}</span>
             </div>
             <div class="card-body">
               <div class="stat-line"><span>Stop Loss:</span><span class="val bear">$${opt.sl ? opt.sl.toFixed(0) : '--'}</span></div>
@@ -71,6 +111,14 @@ export const UIManager = {
           </div>
         `;
       }).join('');
+    } else if (cardsContainer) {
+      // No entry options — show zone scanning message
+      const zp = signalData.zoneProximity;
+      let msg = 'Menunggu harga mendekati zona S/R...';
+      if (zp && zp.status === 'BETWEEN_ZONES') {
+        msg = 'Harga di antara zona S/R — tidak ada entry yang optimal. Tunggu harga mendekati support atau resistance.';
+      }
+      cardsContainer.innerHTML = `<div class="entry-card card-waiting"><div class="card-note">${msg}</div></div>`;
     }
 
     // Reasoning
@@ -79,14 +127,20 @@ export const UIManager = {
     const setup = signalData.setup;
 
     if (setup && setup.bias !== 'NEUTRAL') {
-      summary.innerText = `Bias: ${setup.bias} (${setup.setupType}) — ${setup.strength}`;
+      summary.innerText = `${signalData.orderType} — Confidence ${signalData.confidence}%`;
     } else {
-      summary.innerText = 'Menunggu konfirmasi arah H1...';
+      summary.innerText = 'Scanning zona S/R... Menunggu harga di area entry.';
     }
 
     list.innerHTML = (signalData.reasonings || []).map(r => {
-      const isWarn = r.includes('WAIT:') || r.includes('INFO:');
-      return `<li class="${isWarn ? 'surge-alert' : ''}">${r}</li>`;
+      const isPositive = r.startsWith('+') || r.includes('✅');
+      const isWarn = r.includes('⚠️') || r.includes('WARNING') || r.includes('HEDGE');
+      const isWait = r.includes('⏳') || r.includes('Waiting') || r.includes('No nearby');
+      let cls = '';
+      if (isWarn) cls = 'surge-alert';
+      else if (isPositive) cls = 'conf-positive';
+      else if (isWait) cls = 'conf-wait';
+      return `<li class="${cls}">${r}</li>`;
     }).join('');
 
     // Update Stats
@@ -103,15 +157,18 @@ export const UIManager = {
     const tfs = [
       { id: 'H4', role: 'Trend Filter', method: 'EMA', optional: true },
       { id: 'H1', role: 'Major Structure', method: 'EMA' },
-      { id: 'M15', role: 'Confirmation', method: 'PA' },
-      { id: 'M5', role: 'Precise Timing', method: 'PA' }
+      { id: 'M15', role: 'Zone Confirm', method: 'EMA' },
+      { id: 'M5', role: 'Entry Timing', method: 'EMA' }
     ];
 
     container.innerHTML = tfs.map(tf => {
       const ind = indicatorsMap[tf.id];
       const trendData = trends ? trends[tf.id] : { trend: 'SIDEWAYS', rsi: 50 };
       const trend = trendData.trend || 'SIDEWAYS';
-      const trendClass = trend === 'BULLISH' ? 'bull-border' : (trend === 'BEARISH' ? 'bear-border' : '');
+      // Normalize lean trends for display
+      const displayTrend = trend.replace('LEAN_', '');
+      const trendClass = displayTrend === 'BULL' || displayTrend === 'BULLISH' ? 'bull-border'
+        : (displayTrend === 'BEAR' || displayTrend === 'BEARISH' ? 'bear-border' : '');
       
       if (!ind) return '<div class="analysis-card loading">Loading...</div>';
 
@@ -119,12 +176,11 @@ export const UIManager = {
       
       let extraInfo = '';
       if (tf.id === 'H1') extraInfo = `<div class="stat-row"><span>Structure:</span> <span class="highlight">${trendData.structure || '--'}</span></div>`;
-      if (tf.method === 'PA') extraInfo = `<div class="stat-row"><span>PA Score:</span> <span class="highlight">${trendData.score || 0}/5</span></div>`;
 
       return `
         <div class="analysis-card ${trendClass}">
           <div class="card-header">
-            <span class="tf-tag">${tf.id} <small>[${tf.optional ? 'OPSIONAL' : tf.method}]</small></span>
+            <span class="tf-tag">${tf.id} <small>[${tf.optional ? 'FILTER' : tf.method}]</small></span>
             <span class="tf-role">${tf.role}</span>
           </div>
           <div class="card-body">
