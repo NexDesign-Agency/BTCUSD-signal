@@ -1,3 +1,5 @@
+<img width="1680" height="1050" alt="image" src="https://github.com/user-attachments/assets/7312a7b7-0f17-4fea-b656-9024041cba52" />
+
 # 💹 BTC/USD Pro-Trading Signal Console
 
 A professional-grade real-time trading dashboard for BTC/USD using Binance WebSocket API. Built with Vite, Lightweight Charts, and Price Action Logic.
