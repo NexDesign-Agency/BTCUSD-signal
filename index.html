@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BTC Trading Signal Console</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <!-- Initial Loader / Connection State -->
+    <div id="startup-overlay" class="overlay active">
+      <div class="overlay-content">
+        <h1 class="logo">BTC<span class="highlight">SIGNAL</span></h1>
+        <p id="connection-status">Binance Live Feed (Free & Real-time)</p>
+        <button id="connect-btn" class="btn primary-btn mt-4">Launch Signal Dashboard</button>
+      </div>
+    </div>
+
+    <div class="dashboard unselectable" id="dashboard-main" style="display: none;">
+      <!-- TOP MATRIX: Timeframe Analysis Cards -->
+      <div id="tf-analysis-matrix" class="analysis-matrix">
+        <!-- Cards will be injected by JS -->
+      </div>
+
+      <!-- MAIN MIDDLE SECTION: Chart & Advanced Signal -->
+      <div class="main-content-split">
+        <div class="panel chart-panel">
+          <div class="chart-header">
+            <div class="symbol-info">
+              <h2 id="symbol-pair">BTC/USD</h2>
+              <div id="current-price" class="current-price-display">--</div>
+            </div>
+            <div class="header-controls">
+              <div class="control-group">
+                <button id="btn-autofit" class="ctrl-btn" title="Auto Fit Chart">AUTO</button>
+              </div>
+              <div class="indicator-group">
+                <button class="ind-btn active" data-ind="MA">MA</button>
+                <button class="ind-btn active" data-ind="BB">BB</button>
+                <button class="ind-btn active" data-ind="VOL">VOL</button>
+                <button class="ind-btn active" data-ind="MACD">MACD</button>
+              </div>
+              <div class="tf-selector">
+                <button class="tf-btn" data-tf="M5">M5</button>
+                <button class="tf-btn" data-tf="M15">M15</button>
+                <button class="tf-btn" data-tf="H1">H1</button>
+                <button class="tf-btn active" data-tf="H4">H4</button>
+              </div>
+            </div>
+          </div>
+          <div class="chart-container" id="chart-container"></div>
+        </div>
+
+        <div class="panel final-signal-panel">
+          <div class="panel-header">
+            <h3>PENDING ORDER</h3>
+            <div id="final-signal-badge" class="signal-badge wait">WAIT</div>
+          </div>
+
+          <div class="confidence-section">
+            <div class="conf-header">
+              <span class="label">Signal Confidence</span>
+              <span id="conf-value" class="value">0%</span>
+            </div>
+            <div class="conf-bar-bg">
+              <div id="conf-bar-fill" class="conf-bar-fill" style="width: 0%"></div>
+            </div>
+          </div>
+          
+          <div class="order-details">
+            <div class="field">
+              <span class="label">Type</span>
+              <span id="order-type" class="value type-val">--</span>
+            </div>
+            <div class="field">
+              <span class="label">Entry Zone</span>
+              <span id="pred-entry" class="value highlight">$ --</span>
+            </div>
+            <div class="field">
+              <span class="label">Stop Loss</span>
+              <span id="pred-sl" class="value bear">$ --</span>
+            </div>
+            <div class="field tp-field">
+              <span class="label">Profit Target 1</span>
+              <span id="pred-tp1" class="value bull">$ --</span>
+            </div>
+            <div class="field tp-field active">
+              <span class="label">Profit Target 2</span>
+              <span id="pred-tp2" class="value bull">$ -- <small>(REC)</small></span>
+            </div>
+            <div class="field tp-field">
+              <span class="label">Profit Target 3</span>
+              <span id="pred-tp3" class="value bull">$ --</span>
+            </div>
+            <div class="field">
+              <span class="label">R:R Ratio</span>
+              <span id="pred-rr" class="value">1 : --</span>
+            </div>
+          </div>
+
+          <div class="reasoning-section">
+            <h4>ANALYSIS REASON</h4>
+            <div id="signal-summary-text" class="summary-text">Waiting for trigger...</div>
+            <ul id="reasoning-list" class="reasoning-list">
+              <!-- Reasoning items injected -->
+            </ul>
+          </div>
+
+          <div class="performance-stats">
+            <div class="stat-box">
+              <span class="label">Win Rate</span>
+              <span id="stat-winrate" class="value">0%</span>
+            </div>
+            <div class="stat-box">
+              <span class="label">Win</span>
+              <span id="stat-win" class="value bull">0</span>
+            </div>
+            <div class="stat-box">
+              <span class="label">Loss</span>
+              <span id="stat-loss" class="value bear">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM ALERT SECTION -->
+      <div class="alert-section panel">
+        <h3>LOGS / ALERTS</h3>
+        <div id="alert-console" class="alert-console"></div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

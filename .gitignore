@@ -1,0 +1,32 @@
+# Dependency directories
+node_modules/
+
+# Build artifacts
+dist/
+build/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+
+# Gemini/Agent metadata
+.gemini/
+.agent/
+brain/
+artifacts/
+scratch/
+implementation_plan.md
+task.md
+walkthrough.md
+*.webp
+*.png
