@@ -53,7 +53,7 @@
 
         <div class="panel final-signal-panel">
           <div class="panel-header">
-            <h3>PENDING ORDER</h3>
+            <h3>AI ENTRY SUGGESTION</h3>
             <div id="final-signal-badge" class="signal-badge wait">WAIT</div>
           </div>
 
@@ -67,35 +67,13 @@
             </div>
           </div>
           
-          <div class="order-details">
-            <div class="field">
-              <span class="label">Type</span>
-              <span id="order-type" class="value type-val">--</span>
-            </div>
-            <div class="field">
-              <span class="label">Entry Zone</span>
-              <span id="pred-entry" class="value highlight">$ --</span>
-            </div>
-            <div class="field">
-              <span class="label">Stop Loss</span>
-              <span id="pred-sl" class="value bear">$ --</span>
-            </div>
-            <div class="field tp-field">
-              <span class="label">Profit Target 1</span>
-              <span id="pred-tp1" class="value bull">$ --</span>
-            </div>
-            <div class="field tp-field active">
-              <span class="label">Profit Target 2</span>
-              <span id="pred-tp2" class="value bull">$ -- <small>(REC)</small></span>
-            </div>
-            <div class="field tp-field">
-              <span class="label">Profit Target 3</span>
-              <span id="pred-tp3" class="value bull">$ --</span>
-            </div>
-            <div class="field">
-              <span class="label">R:R Ratio</span>
-              <span id="pred-rr" class="value">1 : --</span>
-            </div>
+          <div class="order-type-display">
+            <span class="label">Execution:</span>
+            <span id="order-type" class="value type-val">--</span>
+          </div>
+
+          <div id="entry-cards-container" class="entry-cards-wrapper">
+            <!-- Cards will be injected by JS -->
           </div>
 
           <div class="reasoning-section">

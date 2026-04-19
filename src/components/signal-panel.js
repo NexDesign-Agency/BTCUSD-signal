@@ -31,42 +31,62 @@ export const UIManager = {
 
     // Pending Order Details
     const orderTypeEl = document.getElementById('order-type');
-    orderTypeEl.innerText = signalData.orderType;
-    
-    // Toggle Prep Mode Visuals
-    const fields = document.querySelectorAll('.order-details .field');
-    fields.forEach(f => {
-      if (signalData.isPrep) {
-        f.classList.add('is-prep');
-      } else {
-        f.classList.remove('is-prep');
-      }
-    });
+    orderTypeEl.innerText = signalData.orderType || '--';
+    orderTypeEl.className = 'value type-val ' + (signalData.signal === 'BUY' ? 'bull' : (signalData.signal === 'SELL' ? 'bear' : ''));
 
-    document.getElementById('pred-entry').innerText = signalData.entry ? `$ ${signalData.entry.toFixed(1)}` : '$ --';
-    document.getElementById('pred-sl').innerText = signalData.sl ? `$ ${signalData.sl.toFixed(1)}` : (signalData.isPrep ? '---' : '$ --');
-    document.getElementById('pred-tp1').innerText = signalData.tp1 ? `$ ${signalData.tp1.toFixed(1)}` : (signalData.isPrep ? '---' : '$ --');
-    document.getElementById('pred-tp2').innerText = signalData.tp2 ? `$ ${signalData.tp2.toFixed(1)}` : (signalData.isPrep ? '---' : '$ --');
-    document.getElementById('pred-tp3').innerText = signalData.tp3 ? `$ ${signalData.tp3.toFixed(1)}` : (signalData.isPrep ? '---' : '$ --');
-    document.getElementById('pred-rr').innerText = signalData.rr ? `1 : ${signalData.rr}` : '1 : --';
+    // Inject Primary + Alternative Entry Cards
+    const cardsContainer = document.getElementById('entry-cards-container');
+    if (cardsContainer && signalData.entryOptions && signalData.entryOptions.length > 0) {
+      cardsContainer.innerHTML = signalData.entryOptions.map(opt => {
+        if (!opt) return '';
+        const isBuy = opt.id === 'BUY';
+        const isPrimary = opt.style === 'PRIMARY';
+        const dirClass = isBuy ? 'bull' : 'bear';
+        const strengthBadge = opt.strength === 'STRONG' ? 'badge-strong' :
+                              opt.strength === 'HIGH' ? 'badge-high' :
+                              opt.strength === 'MEDIUM' ? 'badge-medium' : 'badge-cond';
 
-    // Highlight Order Type
-    const typeEl = document.getElementById('order-type');
-    typeEl.className = 'value type-val ' + (signalData.signal === 'BUY' ? 'bull' : (signalData.signal === 'SELL' ? 'bear' : ''));
+        let cardClass = isPrimary
+          ? (isBuy ? 'card-primary-buy' : 'card-primary-sell')
+          : 'card-alt';
+
+        return `
+          <div class="entry-card ${cardClass}">
+            <div class="card-head">
+              <span class="card-dir-badge ${dirClass}">${isPrimary ? (isBuy ? '▲' : '▼') : '↻'} ${opt.label}</span>
+              <span class="strength-badge ${strengthBadge}">${opt.strength}</span>
+            </div>
+            <div class="entry-zone-box">
+              <span class="ez-label">${isPrimary ? 'ENTRY ZONE' : 'ENTRY'}</span>
+              <span class="ez-val ${dirClass}">$${opt.entryLow ? opt.entryLow.toFixed(0) : '--'} – $${opt.entryHigh ? opt.entryHigh.toFixed(0) : '--'}</span>
+            </div>
+            <div class="card-body">
+              <div class="stat-line"><span>Stop Loss:</span><span class="val bear">$${opt.sl ? opt.sl.toFixed(0) : '--'}</span></div>
+              <div class="stat-line"><span>Target 1:</span><span class="val bull">$${opt.tp1 ? opt.tp1.toFixed(0) : '--'}</span></div>
+              <div class="stat-line"><span>Target 2:</span><span class="val bull">$${opt.tp2 ? opt.tp2.toFixed(0) : '--'}</span></div>
+              <div class="stat-line"><span>R:R Ratio:</span><span class="val">1 : ${opt.rr}</span></div>
+            </div>
+            <div class="card-note">${opt.note}</div>
+            <div class="card-instruction">▶ ${opt.instruction}</div>
+          </div>
+        `;
+      }).join('');
+    }
 
     // Reasoning
     const summary = document.getElementById('signal-summary-text');
     const list = document.getElementById('reasoning-list');
-    
-    if (signalData.signal === 'WAIT') {
-      summary.innerText = signalData.reasonings.length > 0 ? signalData.reasonings[0] : 'Menunggu konfirmasi teknikal...';
+    const setup = signalData.setup;
+
+    if (setup && setup.bias !== 'NEUTRAL') {
+      summary.innerText = `Bias: ${setup.bias} (${setup.setupType}) — ${setup.strength}`;
     } else {
-      summary.innerText = `Eksekusi ${signalData.orderType} Siap!`;
+      summary.innerText = 'Menunggu konfirmasi arah H1...';
     }
 
     list.innerHTML = (signalData.reasonings || []).map(r => {
-      const isPriority = r.includes('WAIT:') || r.includes('PERINGATAN');
-      return `<li class="${isPriority ? 'surge-alert' : ''}">${r}</li>`;
+      const isWarn = r.includes('WAIT:') || r.includes('INFO:');
+      return `<li class="${isWarn ? 'surge-alert' : ''}">${r}</li>`;
     }).join('');
 
     // Update Stats
@@ -81,10 +101,10 @@ export const UIManager = {
     if (!container) return;
 
     const tfs = [
-      { id: 'H4', role: 'Trend Filter', method: 'EMA' },
       { id: 'H1', role: 'Major Structure', method: 'EMA' },
       { id: 'M15', role: 'Confirmation', method: 'PA' },
-      { id: 'M5', role: 'Precise Timing', method: 'PA' }
+      { id: 'M5', role: 'Precise Timing', method: 'PA' },
+      { id: 'H4', role: 'Trend Filter', method: 'EMA', optional: true }
     ];
 
     container.innerHTML = tfs.map(tf => {
@@ -104,7 +124,7 @@ export const UIManager = {
       return `
         <div class="analysis-card ${trendClass}">
           <div class="card-header">
-            <span class="tf-tag">${tf.id} <small>[${tf.method}]</small></span>
+            <span class="tf-tag">${tf.id} <small>[${tf.optional ? 'OPSIONAL' : tf.method}]</small></span>
             <span class="tf-role">${tf.role}</span>
           </div>
           <div class="card-body">

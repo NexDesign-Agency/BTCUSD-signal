@@ -231,50 +231,161 @@ h1, h2, h3 {
   transition: width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.order-details {
+.order-type-display {
   display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  padding: 0.75rem;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  padding: 0.5rem 0.75rem;
   background: rgba(255,255,255,0.02);
   border-radius: 4px;
 }
 
-.field.is-prep span.value {
-  color: #555 !important;
-  font-style: italic;
-}
-
-.field.is-prep .label::after {
-  content: ' (PREP)';
-  font-size: 0.6rem;
-  opacity: 0.6;
-}
-
-.field {
-  display: flex;
-  justify-content: space-between;
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  padding: 0.2rem 0;
-}
-
-.field .label { color: var(--text-secondary); }
-.field .value { font-weight: bold; }
-.field .value.highlight { color: var(--neon-green); }
-
-.tp-field.active {
-  background: rgba(0, 255, 65, 0.05);
-  border: 1px dashed rgba(0, 255, 65, 0.2);
-  padding: 0.4rem;
-  border-radius: 4px;
+.order-type-display .label {
+  color: var(--text-secondary);
 }
 
 .type-val {
   padding: 2px 8px;
   border-radius: 3px;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
+  font-weight: bold;
   text-transform: uppercase;
+}
+
+.entry-cards-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.entry-card {
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #333;
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  transition: all 0.3s ease;
+  font-size: 0.8rem;
+}
+
+.card-primary-buy {
+  border-color: rgba(0, 255, 65, 0.45);
+  background: rgba(0, 255, 65, 0.06);
+  box-shadow: 0 0 12px rgba(0, 255, 65, 0.07);
+}
+
+.card-primary-sell {
+  border-color: rgba(255, 7, 58, 0.45);
+  background: rgba(255, 7, 58, 0.06);
+  box-shadow: 0 0 12px rgba(255, 7, 58, 0.07);
+}
+
+.card-alt {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  opacity: 0.75;
+}
+
+/* Card head */
+.entry-card .card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.card-dir-badge {
+  font-weight: 700;
+  font-size: 0.82rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.3px;
+}
+
+/* Strength badges */
+.strength-badge {
+  font-size: 0.62rem;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.badge-strong { background: rgba(0,255,65,0.2); color: var(--neon-green); }
+.badge-high   { background: rgba(0,200,100,0.2); color: #00c864; }
+.badge-medium { background: rgba(255,165,0,0.2); color: #ffa500; }
+.badge-cond   { background: rgba(255,255,255,0.08); color: var(--text-secondary); }
+
+/* Entry zone highlight box */
+.entry-zone-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  background: rgba(255,255,255,0.04);
+  border-radius: 4px;
+  padding: 0.35rem 0.5rem;
+}
+
+.ez-label {
+  font-size: 0.62rem;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.ez-val {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+/* Card body (SL/TP/RR rows) */
+.entry-card .card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+}
+
+.entry-card .stat-line {
+  display: flex;
+  justify-content: space-between;
+}
+
+.entry-card .stat-line span:first-child {
+  color: var(--text-secondary);
+}
+
+.entry-card .stat-line .val { font-weight: 600; }
+
+/* Context note (why this setup) */
+.card-note {
+  font-size: 0.72rem;
+  color: #bbb;
+  line-height: 1.45;
+  padding: 0.3rem 0;
+  border-top: 1px dashed rgba(255,255,255,0.07);
+}
+
+/* Actionable instruction */
+.card-instruction {
+  font-size: 0.72rem;
+  color: var(--neon-green);
+  font-family: var(--font-mono);
+  line-height: 1.4;
+  opacity: 0.85;
+}
+
+.card-alt .card-instruction {
+  color: #ffa500;
 }
 
 .reasoning-section h4 {
