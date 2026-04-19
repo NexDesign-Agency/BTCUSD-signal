@@ -66,8 +66,8 @@ async function bootstrap() {
 
 async function loadInitialData() {
   const tfs = ['5m', '15m', '1h', '4h'];
-  UIManager.log('Fetching market data from Binance API...');
-  
+  UIManager.log('Connecting to market data source...');
+
   let successCount = 0;
   for (const tf of tfs) {
     try {
@@ -76,16 +76,21 @@ async function loadInitialData() {
         dataMap[tf] = data;
         indicatorsMap[tf] = IndicatorEngine.calculate(dataMap[tf]);
         successCount++;
+        UIManager.log(`[OK] ${tf} data loaded (${data.length} candles).`);
+      } else {
+        UIManager.log(`[WARN] ${tf} returned empty data.`);
       }
     } catch (e) {
       console.error(`Failed to load ${tf}`, e);
+      UIManager.log(`[ERR] Failed to load ${tf}: ${e.message}`);
     }
   }
 
   if (successCount === 0) {
-    UIManager.log('CRITICAL ERROR: Failed to fetch market data. Please check your connection.');
+    UIManager.log('CRITICAL: All data sources failed. Check internet connection.');
   } else {
-    UIManager.log('Historical data loaded successfully.');
+    const src = binance.workingBaseUrl ? 'Binance' : 'CryptoCompare (fallback)';
+    UIManager.log(`Historical data loaded via ${src}. ${successCount}/4 TFs ready.`);
   }
 }
 
