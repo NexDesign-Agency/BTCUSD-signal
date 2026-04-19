@@ -214,16 +214,22 @@ function startEngine() {
     const sigResult = SignalEngine.calculateSignal(signalMap);
     UIManager.updateSignal(sigResult);
     
-    // Update Chart Markers based on Signal history
-    const history = SignalStorage.getHistory ? SignalStorage.getHistory() : [];
-    const chartMarkers = history.map(s => ({
-      time: Math.floor(s.time / 1000),
-      position: s.type === 'BUY' ? 'belowBar' : 'aboveBar',
-      color: s.type === 'BUY' ? '#00ff41' : '#ff073a',
-      shape: s.type === 'BUY' ? 'arrowUp' : 'arrowDown',
-      text: s.type
-    }));
-    chartApp.setMarkers(chartMarkers);
+    // Update Chart: single latest signal marker only (no spam)
+    if (sigResult.signal !== 'WAIT' && previousSignal === 'WAIT') {
+      const now = Math.floor(Date.now() / 1000);
+      chartApp.setMarkers([{
+        time: now,
+        position: sigResult.signal === 'BUY' ? 'belowBar' : 'aboveBar',
+        color: sigResult.signal === 'BUY' ? '#00ff41' : '#ff073a',
+        shape: sigResult.signal === 'BUY' ? 'arrowUp' : 'arrowDown',
+        text: sigResult.signal
+      }]);
+    }
+
+    // Update Support/Resistance lines on chart
+    if (sigResult.pivots) {
+      chartApp.updateSRLines(sigResult.pivots.support, sigResult.pivots.resistance);
+    }
 
     // UI Matrix update
     UIManager.updateMatrix(signalMap, sigResult.trends);

@@ -69,11 +69,16 @@ export class ChartComponent {
 
     this.chart.priceScale('macd').applyOptions({
       scaleMargins: {
-        top: 0.7, // macd slightly above volume
+        top: 0.7,
         bottom: 0.1,
       },
-      visible: false, // hide the scale
+      visible: false,
     });
+
+    // S/R Price Lines state
+    this.supportLine = null;
+    this.resistanceLine = null;
+    this.srVisible = true;
 
     // Resize handler
     new ResizeObserver(entries => {
@@ -98,12 +103,57 @@ export class ChartComponent {
   }
 
   setMarkers(markers) {
-    // markers: [{ time, position, color, shape, text }]
     this.candleSeries.setMarkers(markers);
   }
 
+  // Support/Resistance horizontal price lines
+  updateSRLines(supportPrice, resistancePrice) {
+    if (!this.srVisible) return;
+
+    // Remove old lines
+    if (this.supportLine) {
+      this.candleSeries.removePriceLine(this.supportLine);
+      this.supportLine = null;
+    }
+    if (this.resistanceLine) {
+      this.candleSeries.removePriceLine(this.resistanceLine);
+      this.resistanceLine = null;
+    }
+
+    // Draw Support line (green dashed)
+    if (supportPrice && supportPrice > 0) {
+      this.supportLine = this.candleSeries.createPriceLine({
+        price: supportPrice,
+        color: '#00ff41',
+        lineWidth: 1,
+        lineStyle: 2, // Dashed
+        axisLabelVisible: true,
+        title: 'S — SUPPORT',
+      });
+    }
+
+    // Draw Resistance line (red dashed)
+    if (resistancePrice && resistancePrice > 0) {
+      this.resistanceLine = this.candleSeries.createPriceLine({
+        price: resistancePrice,
+        color: '#ff073a',
+        lineWidth: 1,
+        lineStyle: 2, // Dashed
+        axisLabelVisible: true,
+        title: 'R — RESISTANCE',
+      });
+    }
+  }
+
+  toggleSR(visible) {
+    this.srVisible = visible;
+    if (!visible) {
+      if (this.supportLine) { this.candleSeries.removePriceLine(this.supportLine); this.supportLine = null; }
+      if (this.resistanceLine) { this.candleSeries.removePriceLine(this.resistanceLine); this.resistanceLine = null; }
+    }
+  }
+
   updateTick(tick, ema21Tick, ema50Tick, volumeTick, bbTick, macdTick) {
-    // tick format: { time, open, high, low, close }
     this.candleSeries.update(tick);
     if (ema21Tick) this.ema21Series.update(ema21Tick);
     if (ema50Tick) this.ema50Series.update(ema50Tick);
@@ -138,6 +188,9 @@ export class ChartComponent {
         break;
       case 'MACD':
         this.macdSeries.applyOptions({ visible });
+        break;
+      case 'SR':
+        this.toggleSR(visible);
         break;
     }
   }

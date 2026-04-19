@@ -260,6 +260,10 @@ export const SignalEngine = {
       setup,
       reasonings: reqs,
       entryOptions,
+      pivots: {
+        support: pivotM15.nearestSupport,
+        resistance: pivotM15.nearestResistance
+      },
       trends: {
         H4: { trend: h4Trend, rsi: indH4.rsi },
         H1: { trend: h1Trend, rsi: indH1.rsi, structure: h1Structure },
