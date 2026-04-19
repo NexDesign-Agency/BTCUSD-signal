@@ -154,10 +154,38 @@ function initializeUI() {
 }
 
 let previousSignal = 'WAIT';
+let alertCycleCount = 0;
+let alertTimer = null;
+let lastAlertedConfidence = 0;
+const MAX_ALERT_PLAYS = 3;
+const ALERT_INTERVAL_MS = 5000; // 5s between alerts → ~15s total
+
+function clearAlertCycle() {
+  if (alertTimer) { clearInterval(alertTimer); alertTimer = null; }
+  alertCycleCount = 0;
+}
+
+function startAlertCycle(signal, confidence) {
+  clearAlertCycle();
+  lastAlertedConfidence = confidence;
+  alertCycleCount = 0;
+
+  const doAlert = () => {
+    alertCycleCount++;
+    playAlertSound();
+    setTimeout(() => playVoiceAlert(`${signal} Signal Active. Confidence ${confidence} percent.`), 300);
+    if (alertCycleCount >= MAX_ALERT_PLAYS) clearAlertCycle();
+  };
+
+  doAlert(); // Immediate first play
+  alertTimer = setInterval(() => {
+    if (alertCycleCount >= MAX_ALERT_PLAYS) { clearAlertCycle(); return; }
+    doAlert();
+  }, ALERT_INTERVAL_MS);
+}
 
 function startEngine() {
   binance.onTick((tick) => {
-    // ... logic remains same ...
     const tf = tick.interval;
     if (dataMap[tf]) {
       const arr = dataMap[tf];
@@ -200,42 +228,44 @@ function startEngine() {
     // UI Matrix update
     UIManager.updateMatrix(signalMap, sigResult.trends);
 
-    // --- Signal Change Detection & Alerts ---
-    if (previousSignal === 'WAIT' && sigResult.signal !== 'WAIT') {
-      // TRANSITION DETECTED (WAIT -> BUY/SELL)
-      playAlertSound(); // Loud Ding
-      setTimeout(() => playVoiceAlert(`${sigResult.signal} Signal Active. Confidence ${sigResult.confidence} percent.`), 500);
-      
-      if (Notification.permission === 'granted') {
-        new Notification(`🔥 BTC ${sigResult.signal} SIGNAL!`, {
-          body: `Confidence: ${sigResult.confidence}% | Entry: ${sigResult.entry.toFixed(1)}`,
-          icon: '/favicon.ico'
-        });
-      }
-    }
-    previousSignal = sigResult.signal;
-
-    // Surge Alerts
-    if (sigResult.surge !== 'NONE' && sigResult.surge !== lastSurgeType) {
-       lastSurgeType = sigResult.surge;
-       playVoiceAlert(sigResult.surge === 'BREAKOUT' ? 'Price Breakout' : 'Price Breakdown');
-       UIManager.log(`ALERTA: ${sigResult.surge} detected.`);
-    } else if (sigResult.surge === 'NONE') {
-       lastSurgeType = 'NONE';
-    }
-
+    // --- Smart Voice Alert System (max 3x, ~15 detik total) ---
     if (sigResult.signal !== 'WAIT') {
-       const sigId = `${sigResult.signal}-${Math.floor(Date.now() / 60000)}`;
-       if (lastAlertedSignalId !== sigId) {
-          lastAlertedSignalId = sigId;
-          SignalStorage.addSignal({
-            id: sigId, type: sigResult.signal, entry: sigResult.entry, sl: sigResult.sl, 
-            tp1: sigResult.tp1, tp2: sigResult.tp2, tp3: sigResult.tp3,
-            time: Date.now(), status: 'OPEN'
+      if (previousSignal === 'WAIT') {
+        // New signal activation → start alert cycle
+        startAlertCycle(sigResult.signal, sigResult.confidence);
+        
+        if (Notification.permission === 'granted') {
+          new Notification(`🔥 BTC ${sigResult.signal} SIGNAL!`, {
+            body: `Confidence: ${sigResult.confidence}%`,
+            icon: '/favicon.ico'
           });
-          UIManager.log(`SIGNAL ACTIVE: ${sigResult.signal} @ ${sigResult.entry.toFixed(1)} (${sigResult.confidence}%)`);
-       }
+        }
+      } else if (Math.abs(sigResult.confidence - lastAlertedConfidence) >= 5) {
+        // Confidence changed significantly → restart alert cycle
+        startAlertCycle(sigResult.signal, sigResult.confidence);
+      }
+
+      // Log signal (deduplicated by minute)
+      const sigId = `${sigResult.signal}-${Math.floor(Date.now() / 60000)}`;
+      if (lastAlertedSignalId !== sigId) {
+        lastAlertedSignalId = sigId;
+        const primary = sigResult.entryOptions && sigResult.entryOptions[0];
+        SignalStorage.addSignal({
+          id: sigId, type: sigResult.signal,
+          entry: primary ? primary.entryHigh : 0,
+          sl: primary ? primary.sl : 0,
+          tp1: primary ? primary.tp1 : 0,
+          tp2: primary ? primary.tp2 : 0,
+          time: Date.now(), status: 'OPEN'
+        });
+        UIManager.log(`SIGNAL ACTIVE: ${sigResult.signal} (${sigResult.confidence}%)`);
+      }
+    } else {
+      // Signal back to WAIT → stop any running alerts
+      clearAlertCycle();
     }
+
+    previousSignal = sigResult.signal;
   });
 
   binance.startStreaming(['5m', '15m', '1h', '4h']);

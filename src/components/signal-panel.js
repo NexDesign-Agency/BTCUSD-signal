@@ -101,10 +101,10 @@ export const UIManager = {
     if (!container) return;
 
     const tfs = [
+      { id: 'H4', role: 'Trend Filter', method: 'EMA', optional: true },
       { id: 'H1', role: 'Major Structure', method: 'EMA' },
       { id: 'M15', role: 'Confirmation', method: 'PA' },
-      { id: 'M5', role: 'Precise Timing', method: 'PA' },
-      { id: 'H4', role: 'Trend Filter', method: 'EMA', optional: true }
+      { id: 'M5', role: 'Precise Timing', method: 'PA' }
     ];
 
     container.innerHTML = tfs.map(tf => {
