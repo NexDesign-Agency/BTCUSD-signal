@@ -372,11 +372,16 @@ function startEngine() {
         playAlertSound();
         
         const entryPrice = s.entryZonePrice || tick.close;
+        const conf = sellScenario ? (sellScenario.confidence || 0) : (buyScenario ? (buyScenario.confidence || 0) : 100);
+        
         const tp1Text = s.tp1 ? `Take profit di harga ${s.tp1.toFixed(0)}.` : '';
         const slText = s.sl ? `Stop loss di harga ${s.sl.toFixed(0)}.` : '';
-        const voiceMsg = `Signal ${s.signal} di harga ${entryPrice.toFixed(0)}. ${tp1Text} ${slText}`;
+        const voiceMsg = `ENTRY SIGNAL SEKARANG! Konfidensi ${conf} persen. Signal ${s.signal} di harga ${entryPrice.toFixed(0)}. ${tp1Text} ${slText}`;
         
         setTimeout(() => playVoiceAlert(voiceMsg, 'id-ID'), 300);
+        
+        // Show Big Logo Overlay
+        UIManager.showBigSignalOverlay(s.signal, entryPrice, conf);
         
         if (Notification.permission === 'granted') {
           new Notification(`🔥 BTC ${s.signal} SIGNAL!`, {

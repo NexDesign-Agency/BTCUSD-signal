@@ -691,6 +691,7 @@ export const SignalEngine = {
 
     const confirmations = [priceGate, rsiH1Gate, rsiM5Gate, candleGate];
     const metCount = confirmations.filter(c => c.met).length;
+    const confidence = Math.round((metCount / confirmations.length) * 100);
     // readyToFire: price harus di zona + minimal 3 dari 4 konfirmasi terpenuhi
     const readyToFire = priceGate.met && metCount >= 3;
 
@@ -707,7 +708,7 @@ export const SignalEngine = {
       direction: 'SELL',
       zone: resistance,
       entryLow, entryHigh, sl, tp1, tp2, rr,
-      confirmations, metCount, readyToFire, waitingFor, isAtZone,
+      confirmations, metCount, confidence, readyToFire, waitingFor, isAtZone,
       strength: resistance.strength,
       touches: resistance.touches
     };
@@ -757,6 +758,7 @@ export const SignalEngine = {
 
     const confirmations = [priceGate, rsiH1Gate, rsiM5Gate, candleGate];
     const metCount = confirmations.filter(c => c.met).length;
+    const confidence = Math.round((metCount / confirmations.length) * 100);
     const readyToFire = priceGate.met && metCount >= 3;
 
     const distToZone = currentPrice > entryHigh
@@ -772,7 +774,7 @@ export const SignalEngine = {
       direction: 'BUY',
       zone: support,
       entryLow, entryHigh, sl, tp1, tp2, rr,
-      confirmations, metCount, readyToFire, waitingFor, isAtZone,
+      confirmations, metCount, confidence, readyToFire, waitingFor, isAtZone,
       strength: support.strength,
       touches: support.touches
     };
@@ -873,6 +875,7 @@ export const SignalEngine = {
       entryRetestHigh,
       sl, tp1, tp2, rr,
       confirmations, metCount, readyToFire,
+      confidence: Math.round((metCount / confirmations.length) * 100),
       waitingFor: '🚀 BREAKOUT TERKONFIRMASI!',
       strength: brokenZone.strength,
       touches: brokenZone.touches,

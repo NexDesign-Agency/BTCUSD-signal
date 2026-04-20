@@ -16,6 +16,37 @@ export const UIManager = {
     else if (price < oldPrice) el.className = 'current-price-display down';
   },
 
+  showBigSignalOverlay(type, price, confidence) {
+    const existing = document.getElementById('big-signal-alert');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'big-signal-alert';
+    overlay.className = 'signal-overlay';
+    
+    const isBuy = type === 'BUY';
+    const icon = isBuy ? '▲' : '▼';
+    const colorClass = isBuy ? 'overlay-buy' : 'overlay-sell';
+    
+    overlay.innerHTML = `
+      <div class="overlay-content ${colorClass}">
+        <div class="overlay-icon">${icon}</div>
+        <div class="overlay-text">${type} SIGNAL</div>
+        <div class="overlay-info">Entry: $${price.toFixed(0)} | Konfidensi: ${confidence}%</div>
+      </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    // Play additional high-impact sound effect if needed
+    
+    setTimeout(() => {
+      overlay.style.opacity = '0';
+      overlay.style.transition = 'opacity 1s ease-out';
+      setTimeout(() => overlay.remove(), 1000);
+    }, 5000);
+  },
+
   updateScenarios(data) {
     if (!data || data.phase === 'LOADING') {
       this._showLoading();
@@ -184,6 +215,7 @@ export const UIManager = {
           <div class="conf-progress-bar">
             <div class="conf-progress-fill" style="width:${progressPct}%;background:${barColor}"></div>
           </div>
+          <div class="card-confidence">Konfidensi: ${sc.confidence || progressPct}%</div>
           <ul class="confirmation-list">${checklist}</ul>
           <div class="entry-zone-box">
             <span class="ez-label">ZONA</span>
@@ -240,13 +272,16 @@ export const UIManager = {
       const headerClass = isSellDir ? 'cascade-header-sell'
         : isBuyDir ? 'cascade-header-buy' : 'cascade-header-wait';
 
+      const glowClass = (signalDir === 'BUY_PARTIAL') ? 'glow-buy'
+        : (signalDir === 'SELL_PARTIAL') ? 'glow-sell' : '';
+
       const headerLabel = isActiveLocked
         ? `${s.signal} SIGNAL 🔒 AKTIF`
         : isCooldown       ? '⏳ COOLDOWN'
         : signalDir === 'SELL'         ? '▼ SELL CONFIRMED'
         : signalDir === 'BUY'          ? '▲ BUY CONFIRMED'
-        : signalDir === 'SELL_PARTIAL' ? '▼ SELL — TUNGGU M5'
-        : signalDir === 'BUY_PARTIAL'  ? '▲ BUY — TUNGGU M5'
+        : signalDir === 'SELL_PARTIAL' ? '▼ SELL — TUNGGU M5 <span class="anticipation-badge">⚡ ANTISIPASI</span>'
+        : signalDir === 'BUY_PARTIAL'  ? '▲ BUY — TUNGGU M5 <span class="anticipation-badge">⚡ ANTISIPASI</span>'
         : '⏳ SCANNING...';
 
       const tfRow = (label, role, trend, rsi, gateMet, gateLabel) => {
@@ -313,7 +348,7 @@ export const UIManager = {
       }
 
       return `
-        <div class="entry-card cascade-signal-card">
+        <div class="entry-card cascade-signal-card ${glowClass}">
           <div class="cascade-signal-header ${headerClass}">
             <span class="cascade-signal-label">${headerLabel}</span>
             <span class="cascade-signal-tf">3TF CASCADE</span>
