@@ -309,119 +309,75 @@ function startEngine() {
           color: ind.macd.histogram >= 0 ? 'rgba(0, 255, 65, 0.4)' : 'rgba(255, 7, 58, 0.4)'
         } : null;
         chartApp.updateTick(tickCandle, tickEma21, tickEma50, tickVol, tickBB, tickMacd);
-        UIManager.updatePrice(tick.close);
-      }
-
-      // Update Timeframe Matrix UI for all intervals in real-time
-      const currentSignalMap = {
-        'H4': indicatorsMap['4h'],
-        'H1': indicatorsMap['1h'],
-        'M15': indicatorsMap['15m'],
-        'M5': indicatorsMap['5m']
-      };
-      UIManager.updateMatrix(currentSignalMap, _lastScenarioResult ? _lastScenarioResult.trends : null);
     }
 
-    // ── REAL-TIME SL/TP CHECK (every tick, only when signal ACTIVE) ───────
-    const slTpEvent = SignalEngine.checkSLTP(tick.close);
-    if (slTpEvent) handleSLTPEvent(slTpEvent, tick.close);
+    // ── LIVE SIGNAL ANALYSIS (Every Tick) ───────────────────────────────
+    // Kami menghitung ulang skenario setiap detik agar kartu visual (checklist, 
+    // progress bar) selalu mencerminkan kondisi absolut pasar saat ini.
+    // Ini krusial untuk trading live agar user tahu seberapa dekat kita dengan entry.
+    const signalMapForLogic = {
+      'H4': indicatorsMap['4h'],
+      'H1': indicatorsMap['1h'],
+      'M15': indicatorsMap['15m'],
+      'M5': indicatorsMap['5m']
+    };
+    _lastScenarioResult = SignalEngine.analyzeScenarios(signalMapForLogic);
+    
+    // Update Matrix & Scenarios UI secara real-time
+    UIManager.updateMatrix(signalMapForLogic, _lastScenarioResult.trends);
+    UIManager.updateScenarios(_lastScenarioResult);
 
-    // ── M15 CANDLE CLOSE → SATU-SATUNYA tempat analyzeScenarios() dipanggil ──
-    // [FIX #5] analyzeScenarios() HANYA di sini. State machine fire signal
-    //          tidak bisa terjadi dari tick M5 maupun tick lainnya.
+    // ── M15 CANDLE CLOSE → Logika temporal (Expiry / Cooldown) ──────────
     const isM15Close = tf === '15m' && tick.time > lastM15Time;
     if (isM15Close) {
       lastM15Time = tick.time;
-
-      // Advance state machine counters (expired / cooldown)
       const m15Ev = SignalEngine.onM15CandleClose();
       if (m15Ev) handleM15Event(m15Ev);
-
-      // Build scenarios & cache hasilnya
-      const signalMap = {
-        'H4': indicatorsMap['4h'],
-        'H1': indicatorsMap['1h'],
-        'M15': indicatorsMap['15m'],
-        'M5': indicatorsMap['5m']
-      };
-      _lastScenarioResult = SignalEngine.analyzeScenarios(signalMap);
-
-      // Update UI (Scenarios only on close, Matrix already updated per-tick)
-      UIManager.updateScenarios(_lastScenarioResult);
-
-      // Chart lines — mutually exclusive:
-      // ENTRY ON  → hanya entry projection (SL/TP/zona entry) sesuai panel kanan
-      // ENTRY OFF → hanya S/R zone map umum (ZONA SELL 1, ZONA BUY 1, dll)
-      const isEntryOn = typeof window._entryVisible === 'function' ? window._entryVisible() : true;
-      if (isEntryOn) {
-        // Clear general S/R zones, draw entry-specific projection only
-        chartApp.updateSRLines(null, null, [], []);
-        chartApp.updateEntryProjections(
-          _lastScenarioResult.sellScenario,
-          _lastScenarioResult.buyScenario
-        );
-      } else {
-        // Show general S/R zone map only
-        chartApp.updateEntryProjections(null, null); // clear projections
-        if (_lastScenarioResult.pivots) {
-          chartApp.updateSRLines(
-            _lastScenarioResult.pivots.support,
-            _lastScenarioResult.pivots.resistance,
-            _lastScenarioResult.pivots.supportLevels,
-            _lastScenarioResult.pivots.resistanceLevels
-          );
-        }
-      }
-
-      // Fire alert ONCE when signal menjadi ACTIVE
-      const s = _lastScenarioResult.activeSignal;
-      if (s.phase === 'ACTIVE' && lastAlertedSignal !== s.lockedTime) {
-        lastAlertedSignal = s.lockedTime;
-        playAlertSound();
-        
-        const entryPrice = s.entryZonePrice || tick.close;
-        const conf = sellScenario ? (sellScenario.confidence || 0) : (buyScenario ? (buyScenario.confidence || 0) : 100);
-        
-        const tp1Text = s.tp1 ? `Take profit di harga ${s.tp1.toFixed(0)}.` : '';
-        const slText = s.sl ? `Stop loss di harga ${s.sl.toFixed(0)}.` : '';
-        const voiceMsg = `ENTRY SIGNAL SEKARANG! Konfidensi ${conf} persen. Signal ${s.signal} di harga ${entryPrice.toFixed(0)}. ${tp1Text} ${slText}`;
-        
-        setTimeout(() => playVoiceAlert(voiceMsg, 'id-ID'), 300);
-        
-        // Show Big Logo Overlay
-        UIManager.showBigSignalOverlay(s.signal, entryPrice, conf);
-        
-        if (Notification.permission === 'granted') {
-          new Notification(`🔥 BTC ${s.signal} SIGNAL!`, {
-            body: `Locked at $${entryPrice.toFixed(0)} | SL: $${s.sl ? s.sl.toFixed(0) : '--'} | TP1: $${s.tp1 ? s.tp1.toFixed(0) : '--'}`,
-            icon: '/favicon.ico'
-          });
-        }
-        UIManager.log(`🎯 SIGNAL FIRED: ${s.signal} — locked 4 M15 candles. SL: $${s.sl ? s.sl.toFixed(0) : '--'}`);
-        SignalStorage.addSignal({
-          id: `${s.signal}-${s.lockedTime}`,
-          type: s.signal,
-          entry: s.entryZonePrice,
-          sl: s.sl,
-          tp1: s.tp1,
-          tp2: s.tp2,
-          time: Date.now(),
-          status: 'OPEN'
-        });
-      }
-
-      previousPhase = s.phase;
     }
 
-    // ── M5 TICK: update panel via cache ──
-    if (tf === '5m' && _lastScenarioResult) {
-      UIManager.updateScenarios(_lastScenarioResult);
-      // Only sync entry projection lines per-tick (S/R map rebuilt on M15 close only)
-      const entryOn = typeof window._entryVisible === 'function' ? window._entryVisible() : true;
-      if (entryOn) {
-        chartApp.updateEntryProjections(
-          _lastScenarioResult.sellScenario,
-          _lastScenarioResult.buyScenario
+    // ── SIGNAL ALERT TRIGGER (Monitor phase transition to ACTIVE) ───────
+    const s = _lastScenarioResult.activeSignal;
+    if (s.phase === 'ACTIVE' && lastAlertedSignal !== s.lockedTime) {
+      lastAlertedSignal = s.lockedTime;
+      playAlertSound();
+      
+      const entryPrice = s.entryZonePrice || tick.close;
+      // Ambil konfidensi dari skenario yang sesuai
+      const currentSc = (_lastScenarioResult.sellScenario && _lastScenarioResult.sellScenario.direction === 'SELL') 
+        ? _lastScenarioResult.sellScenario 
+        : _lastScenarioResult.buyScenario;
+      const conf = currentSc ? (currentSc.confidence || 0) : 100;
+      
+      const tp1Text = s.tp1 ? `Take profit di harga ${s.tp1.toFixed(0)}.` : '';
+      const slText = s.sl ? `Stop loss di harga ${s.sl.toFixed(0)}.` : '';
+      const voiceMsg = `ENTRY SIGNAL SEKARANG! Konfidensi ${conf} persen. Signal ${s.signal} di harga ${entryPrice.toFixed(0)}. ${tp1Text} ${slText}`;
+      
+      setTimeout(() => playVoiceAlert(voiceMsg, 'id-ID'), 300);
+      UIManager.showBigSignalOverlay(s.signal, entryPrice, conf);
+      
+      if (Notification.permission === 'granted') {
+        new Notification(`🔥 BTC ${s.signal} SIGNAL!`, {
+          body: `Locked at $${entryPrice.toFixed(0)} | SL: $${s.sl ? s.sl.toFixed(0) : '--'}`,
+          icon: '/favicon.ico'
+        });
+      }
+      UIManager.log(`🎯 SIGNAL FIRED: ${s.signal} — locked 4 M15 candles.`);
+      SignalStorage.addSignal({
+        id: `${s.signal}-${s.lockedTime}`,
+        type: s.signal, entry: s.entryZonePrice, sl: s.sl, tp1: s.tp1, tp2: s.tp2,
+        time: Date.now(), status: 'OPEN'
+      });
+    }
+
+    // ── CHART PROJECTIONS (Every tick sync) ─────────────────────────────
+    const isEntryOn = typeof window._entryVisible === 'function' ? window._entryVisible() : true;
+    if (isEntryOn) {
+      chartApp.updateEntryProjections(_lastScenarioResult.sellScenario, _lastScenarioResult.buyScenario);
+    } else {
+      if (_lastScenarioResult.pivots) {
+        chartApp.updateSRLines(
+          _lastScenarioResult.pivots.support, _lastScenarioResult.pivots.resistance,
+          _lastScenarioResult.pivots.supportLevels, _lastScenarioResult.pivots.resistanceLevels
         );
       }
     }
