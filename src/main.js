@@ -82,6 +82,11 @@ async function bootstrap() {
     startEngine();
 
     UIManager.log('System initialized. Dashboard launched.');
+    
+    // Welcome message with a small delay to ensure voices are loaded
+    setTimeout(() => {
+      playVoiceAlert("Selamat datang di TRADING BOT SIGNAL .... Karya Anak Bangsa", 'id-ID');
+    }, 1000);
   });
 }
 
@@ -367,10 +372,9 @@ function startEngine() {
         playAlertSound();
         
         const entryPrice = s.entryZonePrice || tick.close;
-        const tp1Text = s.tp1 ? `Take profit satu di ${s.tp1.toFixed(0)}.` : '';
-        const tp2Text = s.tp2 ? `Take profit dua di ${s.tp2.toFixed(0)}.` : '';
-        const slText = s.sl ? `Stop loss di ${s.sl.toFixed(0)}.` : '';
-        const voiceMsg = `Konfirmasi signal ${s.signal} di harga ${entryPrice.toFixed(0)}. ${tp1Text} ${tp2Text} ${slText}`;
+        const tp1Text = s.tp1 ? `Take profit di harga ${s.tp1.toFixed(0)}.` : '';
+        const slText = s.sl ? `Stop loss di harga ${s.sl.toFixed(0)}.` : '';
+        const voiceMsg = `Signal ${s.signal} di harga ${entryPrice.toFixed(0)}. ${tp1Text} ${slText}`;
         
         setTimeout(() => playVoiceAlert(voiceMsg, 'id-ID'), 300);
         
@@ -451,25 +455,37 @@ function playVoiceAlert(text, lang = 'id-ID') {
     const utterance = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
     
-    // Try to find Indonesian voice
-    const idVoice = voices.find(v => v.lang.startsWith('id'));
-    if (idVoice) {
-      utterance.voice = idVoice;
+    // Try to find Indonesian voices
+    const idVoices = voices.filter(v => v.lang.startsWith('id'));
+    
+    // Prioritize Male voices (names like Andika or Ardi in Windows/Android)
+    let selectedVoice = idVoices.find(v => 
+      v.name.toLowerCase().includes('male') || 
+      v.name.toLowerCase().includes('andika') || 
+      v.name.toLowerCase().includes('ardi')
+    );
+    
+    // If no specific male voice, take the first Indonesian one
+    if (!selectedVoice && idVoices.length > 0) {
+      selectedVoice = idVoices[0];
+    }
+    
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
     }
     
     utterance.lang = lang;
-    utterance.rate = 1.1; // Slightly faster but natural
-    utterance.pitch = 1.0;
+    utterance.rate = 1.0; 
+    
+    // Adjust pitch: lower pitch generally sounds more masculine
+    // Use 0.9 if we explicitly found a male voice, or 0.8 to "deepen" a female voice fallback
+    utterance.pitch = (selectedVoice && selectedVoice.name.toLowerCase().includes('female')) ? 0.8 : 0.9;
+    
     window.speechSynthesis.speak(utterance);
   } else {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.3);
+    // Fallback if no speech synthesis
+    const notification = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+    notification.play();
   }
 }
 
