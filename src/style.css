@@ -515,9 +515,9 @@ h1, h2, h3 {
 @media (max-width: 768px) {
   .dashboard { padding: 0.5rem; gap: 0.5rem; }
   .analysis-matrix { gap: 0.5rem; }
-  .tf-tag { font-size: 0.95rem; }
-  .tf-role { font-size: 0.55rem; }
-  .card-body { font-size: 0.7rem; }
+  .tf-tag { font-size: 1.1rem; }
+  .tf-role { font-size: 0.65rem; }
+  .card-body { font-size: 0.85rem; }
   
   .chart-header {
     flex-direction: column;
@@ -536,17 +536,29 @@ h1, h2, h3 {
   }
   
   .ctrl-btn, .ind-btn, .tf-btn {
-    padding: 0.2rem 0.45rem;
-    font-size: 0.65rem;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
   }
 
   .entry-cards-wrapper {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem;
   }
+
+  .cascade-signal-header { font-size: 0.9rem; padding: 0.75rem; }
+  .cascade-tf-row { font-size: 0.8rem; padding: 0.5rem 0.75rem; }
+  .check-item { font-size: 0.8rem; padding: 0.25rem 0.5rem; }
+  .cascade-level-row { font-size: 0.85rem; padding: 0.5rem 0; }
+  .cascade-level-label { font-size: 0.75rem; color: #bbb; }
+  .check-label { color: #ccc; }
+  .cascade-tf-role { color: #bbb; }
+  .cascade-tf-tag { font-size: 0.85rem; }
+  .cascade-waiting-msg { font-size: 0.8rem; padding: 0.6rem 0.75rem; }
   
   .active-levels {
     flex-wrap: wrap;
-    gap: 0.5rem 1rem;
+    gap: 0.5rem 1.2rem;
+    font-size: 0.9rem;
   }
   
   .performance-stats {
@@ -555,8 +567,9 @@ h1, h2, h3 {
   
   .alert-section {
     height: auto;
-    min-height: 80px;
+    min-height: 100px;
   }
+  .alert-console { font-size: 0.85rem; }
 }
 
 .chart-container {
@@ -919,8 +932,8 @@ h1, h2, h3 {
   padding: 0.55rem 0.75rem;
   font-family: var(--font-mono); font-weight: 700; font-size: 0.72rem; letter-spacing: 0.5px;
 }
-.cascade-header-sell { background: rgba(255,7,58,0.18); border-bottom: 1px solid rgba(255,7,58,0.35); color: #ff4466; }
-.cascade-header-buy  { background: rgba(0,255,65,0.12); border-bottom: 1px solid rgba(0,255,65,0.3); color: var(--neon-green); }
+.cascade-header-sell { background: rgba(255,7,58,0.25); border-bottom: 1px solid rgba(255,7,58,0.45); color: #ff6688; }
+.cascade-header-buy  { background: rgba(0,255,65,0.18); border-bottom: 1px solid rgba(0,255,65,0.4); color: #00ff66; }
 .cascade-header-wait { background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--text-secondary); }
 .cascade-signal-label { font-size: 0.75rem; }
 .cascade-signal-tf    { font-size: 0.58rem; opacity: 0.6; letter-spacing: 1px; }
