@@ -889,14 +889,14 @@ h1, h2, h3 {
   /* ENTRY CARDS WRAPPER */
   .entry-cards-wrapper {
     grid-template-columns: 1fr !important;
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
 
   /* PRIMARY ENTRY CARD */
   .entry-card {
-    padding: 0.55rem;
-    font-size: 0.7rem;
-    gap: 0.3rem;
+    padding: 0.8rem;
+    font-size: 0.9rem;
+    gap: 0.5rem;
   }
   
   .entry-card .card-head {
@@ -904,28 +904,29 @@ h1, h2, h3 {
   }
   
   .card-dir-badge {
-    font-size: 0.75rem;
+    font-size: 1rem;
   }
   
   .strength-badge {
-    font-size: 0.6rem;
+    font-size: 0.75rem;
   }
   
   .entry-zone-box {
-    padding: 0.3rem 0.4rem;
+    padding: 0.5rem 0.6rem;
+    margin: 0.2rem 0;
   }
   
   .ez-label {
-    font-size: 0.58rem;
+    font-size: 0.75rem;
   }
   
   .ez-val {
-    font-size: 0.85rem;
+    font-size: 1.1rem;
   }
   
   .entry-card .card-body {
-    font-size: 0.7rem;
-    gap: 0.15rem;
+    font-size: 0.9rem;
+    gap: 0.4rem;
   }
   
   .entry-card .stat-line span:first-child {
@@ -942,86 +943,87 @@ h1, h2, h3 {
   }
   
   .cascade-signal-header { 
-    font-size: 0.7rem; 
-    padding: 0.5rem 0.6rem;
+    font-size: 0.9rem; 
+    padding: 0.6rem 0.8rem;
   }
   
   .cascade-signal-label { 
-    font-size: 0.7rem; 
+    font-size: 0.9rem; 
   }
   
   .cascade-signal-tf { 
-    font-size: 0.55rem; 
+    font-size: 0.75rem; 
   }
   
   .cascade-progress-label { 
-    font-size: 0.55rem; 
+    font-size: 0.75rem; 
   }
   
   .cascade-tf-row { 
-    font-size: 0.62rem; 
-    padding: 0.25rem 0.6rem;
+    font-size: 0.85rem; 
+    padding: 0.4rem 0.8rem;
   }
   
   .cascade-tf-tag { 
-    font-size: 0.65rem; 
+    font-size: 0.85rem; 
   }
   
   .cascade-tf-role { 
-    font-size: 0.52rem; 
-  }
-  
-  .cascade-trend { 
-    font-size: 0.6rem; 
-  }
-  
-  .cascade-rsi { 
-    font-size: 0.55rem; 
-  }
-  
-  .cascade-gate { 
-    font-size: 0.55rem; 
-  }
-  
-  .cascade-entry-box {
-    padding: 0.35rem 0.6rem;
-  }
-  
-  .cascade-level-row { 
-    font-size: 0.62rem; 
-  }
-  
-  .cascade-level-label { 
-    font-size: 0.55rem; 
-  }
-  
-  .cascade-level-val { 
     font-size: 0.7rem; 
   }
   
+  .cascade-trend { 
+    font-size: 0.85rem; 
+  }
+  
+  .cascade-rsi { 
+    font-size: 0.8rem; 
+  }
+  
+  .cascade-gate { 
+    font-size: 0.8rem; 
+  }
+  
+  .cascade-entry-box {
+    padding: 0.6rem 0.8rem;
+    gap: 0.3rem;
+  }
+  
+  .cascade-level-row { 
+    font-size: 0.85rem; 
+  }
+  
+  .cascade-level-label { 
+    font-size: 0.7rem; 
+  }
+  
+  .cascade-level-val { 
+    font-size: 0.95rem; 
+  }
+  
   .cascade-waiting-msg { 
-    font-size: 0.6rem; 
-    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem; 
+    padding: 0.5rem 0.8rem;
   }
   
   .cascade-lock-badge { 
-    font-size: 0.6rem; 
-    margin: 0.3rem 0.6rem 0.4rem;
+    font-size: 0.8rem; 
+    margin: 0.5rem 0.8rem 0.6rem;
   }
 
   /* CONFIRMATION CHECKLIST */
   .check-item {
-    gap: 0.2rem;
-    font-size: 0.62rem;
+    gap: 0.4rem;
+    font-size: 0.85rem;
   }
   
   .check-icon { 
-    font-size: 0.6rem; 
+    font-size: 0.85rem; 
   }
   
   .check-label { 
-    font-size: 0.62rem;
-    line-height: 1.3;
+    font-size: 0.85rem;
+    line-height: 1.4;
   }
 
   /* ACTIVE SIGNAL BANNER */
@@ -1078,11 +1080,11 @@ h1, h2, h3 {
   }
   
   .stat-box .label { 
-    font-size: 0.55rem; 
+    font-size: 0.75rem; 
   }
   
   .stat-box .value { 
-    font-size: 0.8rem; 
+    font-size: 1rem; 
   }
 
   /* ZONE PROXIMITY & CONFIDENCE */
@@ -1091,7 +1093,7 @@ h1, h2, h3 {
   }
   
   .zone-status-display {
-    font-size: 0.72rem;
+    font-size: 0.85rem;
   }
   
   .confidence-section {
@@ -1107,8 +1109,8 @@ h1, h2, h3 {
   }
   
   .order-type-display {
-    font-size: 0.78rem;
-    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
+    padding: 0.5rem 0.8rem;
   }
 
   /* ALERT SECTION */
@@ -1155,11 +1157,11 @@ h1, h2, h3 {
   }
 
   .card-body {
-    font-size: 0.7rem;
+    font-size: 0.85rem;
   }
 
   .main-content-split {
-    gap: 0.35rem;
+    gap: 0.5rem;
   }
 
   .chart-panel {
@@ -1180,26 +1182,22 @@ h1, h2, h3 {
   }
 
   .entry-card {
-    padding: 0.5rem;
-    font-size: 0.68rem;
+    padding: 0.8rem;
+    font-size: 0.9rem;
   }
 
   .cascade-signal-header {
-    font-size: 0.68rem;
-    padding: 0.45rem 0.5rem;
+    font-size: 0.85rem;
+    padding: 0.6rem;
   }
 
   .cascade-tf-row {
-    font-size: 0.6rem;
-    padding: 0.2rem 0.5rem;
-  }
-
-  .cascade-entry-box {
-    padding: 0.3rem 0.5rem;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem;
   }
 
   .cascade-level-row {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
   }
 
   .performance-stats {
@@ -1212,7 +1210,7 @@ h1, h2, h3 {
   }
 
   .alert-console {
-    font-size: 0.7rem;
-    max-height: 50px;
+    font-size: 0.85rem;
+    max-height: 80px;
   }
 }
