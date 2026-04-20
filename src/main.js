@@ -241,15 +241,16 @@ let lastAlertedSignal = null;
 
 function handleSLTPEvent(ev, price) {
   const icon = ev.event.includes('TP') ? '✅' : '❌';
-  const rrLabel = ev.event === 'TP2_HIT' ? 'TP2' : ev.event === 'TP1_HIT' ? 'TP1' : 'SL';
+  const eventLabel = ev.event === 'TP2_HIT' ? 'Take Profit Dua' : ev.event === 'TP1_HIT' ? 'Take Profit Satu' : 'Stop Loss';
   const msg = ev.event === 'SL_HIT'
-    ? `SL Hit — Signal ${ev.signal} Closed ❌ @ $${price.toFixed(0)}`
-    : `${rrLabel} Hit — Signal ${ev.signal} Profit ✅ @ $${price.toFixed(0)}`;
+    ? `${eventLabel} kena. Signal ${ev.signal} ditutup di harga ${price.toFixed(0)}.`
+    : `${eventLabel} kena! Signal ${ev.signal} profit di harga ${price.toFixed(0)}.`;
+  
   UIManager.log(`⚡ ${msg}`);
   playAlertSound();
-  setTimeout(() => playVoiceAlert(msg), 300);
+  setTimeout(() => playVoiceAlert(msg, 'id-ID'), 300);
   if (Notification.permission === 'granted') {
-    new Notification(`${icon} ${rrLabel} Hit!`, { body: msg, icon: '/favicon.ico' });
+    new Notification(`${ev.event.includes('TP') ? '✅' : '❌'} ${eventLabel} Hit!`, { body: msg, icon: '/favicon.ico' });
   }
 }
 
@@ -364,10 +365,18 @@ function startEngine() {
       if (s.phase === 'ACTIVE' && lastAlertedSignal !== s.lockedTime) {
         lastAlertedSignal = s.lockedTime;
         playAlertSound();
-        setTimeout(() => playVoiceAlert(`${s.signal} Signal Active. Price reached zone. All confirmations met.`), 300);
+        
+        const entryPrice = s.entryZonePrice || tick.close;
+        const tp1Text = s.tp1 ? `Take profit satu di ${s.tp1.toFixed(0)}.` : '';
+        const tp2Text = s.tp2 ? `Take profit dua di ${s.tp2.toFixed(0)}.` : '';
+        const slText = s.sl ? `Stop loss di ${s.sl.toFixed(0)}.` : '';
+        const voiceMsg = `Konfirmasi signal ${s.signal} di harga ${entryPrice.toFixed(0)}. ${tp1Text} ${tp2Text} ${slText}`;
+        
+        setTimeout(() => playVoiceAlert(voiceMsg, 'id-ID'), 300);
+        
         if (Notification.permission === 'granted') {
           new Notification(`🔥 BTC ${s.signal} SIGNAL!`, {
-            body: `Zone reached + confirmations met | SL: $${s.sl ? s.sl.toFixed(0) : '--'} | TP1: $${s.tp1 ? s.tp1.toFixed(0) : '--'}`,
+            body: `Locked at $${entryPrice.toFixed(0)} | SL: $${s.sl ? s.sl.toFixed(0) : '--'} | TP1: $${s.tp1 ? s.tp1.toFixed(0) : '--'}`,
             icon: '/favicon.ico'
           });
         }
@@ -437,10 +446,19 @@ function playHedgeAlertSound() {
   });
 }
 
-function playVoiceAlert(text) {
+function playVoiceAlert(text, lang = 'id-ID') {
   if ('speechSynthesis' in window) {
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.2;
+    const voices = window.speechSynthesis.getVoices();
+    
+    // Try to find Indonesian voice
+    const idVoice = voices.find(v => v.lang.startsWith('id'));
+    if (idVoice) {
+      utterance.voice = idVoice;
+    }
+    
+    utterance.lang = lang;
+    utterance.rate = 1.1; // Slightly faster but natural
     utterance.pitch = 1.0;
     window.speechSynthesis.speak(utterance);
   } else {
