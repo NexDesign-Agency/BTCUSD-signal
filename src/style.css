@@ -176,7 +176,7 @@ h1, h2, h3 {
 /* MAIN CONTENT */
 .main-content-split {
   display: grid;
-  grid-template-columns: 2.2fr 1fr;
+  grid-template-columns: 1.55fr 1.15fr;
   gap: 0.75rem;
   flex: 1;
   min-height: 0;
@@ -190,10 +190,11 @@ h1, h2, h3 {
 }
 
 .final-signal-panel {
-  padding: 1.25rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.65rem;
+  overflow-y: auto;
 }
 
 .panel-header {
@@ -255,23 +256,22 @@ h1, h2, h3 {
 }
 
 .entry-cards-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-  overflow-y: auto;
-  max-height: 400px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  align-items: start;
 }
 
 .entry-card {
-  padding: 0.75rem;
+  padding: 0.6rem;
   border-radius: 6px;
   border: 1px solid #333;
   background: rgba(255, 255, 255, 0.02);
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.35rem;
   transition: all 0.3s ease;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
 }
 
 .card-primary-buy {
@@ -612,3 +612,321 @@ h1, h2, h3 {
 /* === Lean Trend Styling === */
 .trend-val.LEAN_BULL { color: rgba(0, 255, 65, 0.6); }
 .trend-val.LEAN_BEAR { color: rgba(255, 7, 58, 0.6); }
+
+/* ===================================================================
+   SIGNAL ENGINE v3 — Scenario-Based UI Styles
+   =================================================================== */
+
+/* Confirmation Checklist */
+.confirmation-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0.3rem 0;
+}
+
+.check-item {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  align-items: start;
+  gap: 0.25rem;
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  padding: 0.15rem 0.25rem;
+  border-radius: 3px;
+  line-height: 1.35;
+}
+
+.check-item.met {
+  background: rgba(0, 255, 65, 0.06);
+}
+
+.check-item.unmet {
+  opacity: 0.65;
+}
+
+.check-icon { font-size: 0.65rem; }
+
+.check-label {
+  color: var(--text-secondary);
+}
+
+.check-item.met .check-label {
+  color: var(--neon-green);
+}
+
+.check-current {
+  display: none;
+}
+
+/* Scenario progress bar */
+.conf-progress-bar {
+  height: 3px;
+  background: #222;
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 0.2rem 0;
+}
+
+.conf-progress-fill {
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+/* Zone strength line */
+.card-zone-strength {
+  font-size: 0.62rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+/* Waiting label */
+.waiting-label {
+  font-size: 0.62rem;
+  color: #ffaa00;
+  font-family: var(--font-mono);
+  padding: 0.15rem 0;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+/* Active locked badge */
+.locked-badge {
+  font-size: 0.62rem;
+  background: rgba(255, 200, 0, 0.2);
+  color: #ffc800;
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-weight: bold;
+  animation: pulse-lock 1.5s infinite;
+}
+
+@keyframes pulse-lock {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 200, 0, 0.4); }
+  70%  { box-shadow: 0 0 0 6px rgba(255, 200, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 200, 0, 0); }
+}
+
+/* Active locked card */
+.card-primary-buy.active-locked {
+  border-color: rgba(0, 255, 65, 0.8);
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.15);
+}
+
+.card-primary-sell.active-locked {
+  border-color: rgba(255, 7, 58, 0.8);
+  box-shadow: 0 0 20px rgba(255, 7, 58, 0.15);
+}
+
+/* Dimmed scenario (when the other is active) */
+.card-dimmed {
+  border-color: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.01);
+  opacity: 0.4;
+}
+
+/* Active signal banner */
+.active-signal-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 5px;
+  font-family: var(--font-mono);
+  font-weight: bold;
+  font-size: 0.88rem;
+  margin-bottom: 0.4rem;
+}
+
+.active-signal-banner.bull {
+  background: rgba(0, 255, 65, 0.12);
+  border: 1px solid rgba(0, 255, 65, 0.4);
+  color: var(--neon-green);
+}
+
+.active-signal-banner.bear {
+  background: rgba(255, 7, 58, 0.12);
+  border: 1px solid rgba(255, 7, 58, 0.4);
+  color: var(--signal-red);
+}
+
+.banner-lock {
+  margin-left: auto;
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+.active-levels {
+  display: flex;
+  gap: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.active-levels strong { font-weight: 700; }
+
+/* Cooldown banner */
+.cooldown-banner {
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 165, 0, 0.1);
+  border: 1px solid rgba(255, 165, 0, 0.3);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: #ffa500;
+}
+
+/* Scanning label */
+.scan-label {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* === Breakout BUY Card Styles === */
+.card-breakout-wait {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+  opacity: 0.75;
+}
+
+.waiting-label.breakout-active {
+  color: var(--neon-green);
+  font-weight: 700;
+  animation: pulse-text 1.5s infinite;
+}
+
+@keyframes pulse-text {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Two entry options in breakout card */
+.breakout-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0.3rem 0;
+  border-top: 1px dashed rgba(0, 255, 65, 0.2);
+  padding-top: 0.3rem;
+}
+
+.entry-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+}
+
+.entry-option-dim {
+  opacity: 0.65;
+}
+
+.entry-tag {
+  font-size: 0.58rem;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.06);
+  color: var(--text-secondary);
+}
+
+.entry-tag.bull {
+  background: rgba(0, 255, 65, 0.15);
+  color: var(--neon-green);
+}
+
+.entry-price {
+  font-weight: 700;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.entry-price.bull {
+  color: var(--neon-green);
+}
+
+
+
+
+/* ============================================================
+   CASCADE 3TF SIGNAL PANEL — v4.0
+   ============================================================ */
+.cascade-signal-card {
+  padding: 0 !important;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.25);
+}
+.cascade-signal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.55rem 0.75rem;
+  font-family: var(--font-mono); font-weight: 700; font-size: 0.72rem; letter-spacing: 0.5px;
+}
+.cascade-header-sell { background: rgba(255,7,58,0.18); border-bottom: 1px solid rgba(255,7,58,0.35); color: #ff4466; }
+.cascade-header-buy  { background: rgba(0,255,65,0.12); border-bottom: 1px solid rgba(0,255,65,0.3); color: var(--neon-green); }
+.cascade-header-wait { background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--text-secondary); }
+.cascade-signal-label { font-size: 0.75rem; }
+.cascade-signal-tf    { font-size: 0.58rem; opacity: 0.6; letter-spacing: 1px; }
+
+.cascade-progress-wrap {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.cascade-progress-bar-bg { flex:1; height:4px; background:rgba(255,255,255,0.08); border-radius:2px; overflow:hidden; }
+.cascade-progress-fill   { height:100%; border-radius:2px; transition: width 0.5s ease, background 0.3s ease; }
+.cascade-progress-label  { font-family:var(--font-mono); font-size:0.6rem; color:var(--text-secondary); white-space:nowrap; }
+
+.cascade-tf-list { display:flex; flex-direction:column; padding:0.3rem 0; }
+.cascade-tf-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:0.3rem 0.75rem; border-left:2px solid transparent;
+  font-family:var(--font-mono); font-size:0.65rem;
+}
+.cascade-tf-row.gate-met  { border-left-color:var(--neon-green); background:rgba(0,255,65,0.04); }
+.cascade-tf-row.gate-wait { border-left-color:rgba(255,255,255,0.1); }
+.cascade-tf-left  { display:flex; flex-direction:column; gap:0.1rem; }
+.cascade-tf-tag   { font-weight:700; font-size:0.7rem; color:var(--text-primary); }
+.cascade-tf-role  { font-size:0.55rem; color:var(--text-secondary); opacity:0.7; }
+.cascade-tf-right { display:flex; gap:0.5rem; align-items:center; }
+.cascade-trend         { font-weight:600; font-size:0.62rem; }
+.cascade-trend.bull    { color:var(--neon-green); }
+.cascade-trend.bear    { color:var(--neon-red); }
+.cascade-trend.neutral { color:var(--text-secondary); }
+.cascade-rsi  { font-size:0.58rem; color:var(--text-secondary); opacity:0.75; }
+.cascade-gate { font-size:0.6rem; color:var(--text-secondary); }
+
+.cascade-entry-box {
+  display:flex; flex-direction:column; gap:0.2rem;
+  padding:0.4rem 0.75rem;
+  border-top:1px solid rgba(255,255,255,0.06);
+  background:rgba(0,0,0,0.15);
+}
+.cascade-level-row   { display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:0.65rem; }
+.cascade-level-label { color:var(--text-secondary); font-size:0.6rem; opacity:0.7; }
+.cascade-level-val   { font-weight:600; color:var(--text-primary); }
+.cascade-level-val.bull { color:var(--neon-green); }
+.cascade-level-val.bear { color:var(--neon-red); }
+
+.cascade-waiting-msg {
+  padding:0.35rem 0.75rem;
+  font-family:var(--font-mono); font-size:0.62rem;
+  color:var(--text-secondary); font-style:italic;
+  border-top:1px solid rgba(255,255,255,0.04);
+}
+.cascade-lock-badge {
+  margin:0.35rem 0.75rem 0.5rem;
+  padding:0.25rem 0.5rem; border-radius:4px;
+  font-family:var(--font-mono); font-size:0.65rem; font-weight:700; text-align:center;
+}
+.cascade-lock-badge.bull { background:rgba(0,255,65,0.12); color:var(--neon-green); border:1px solid rgba(0,255,65,0.3); }
+.cascade-lock-badge.bear { background:rgba(255,7,58,0.12); color:var(--neon-red);   border:1px solid rgba(255,7,58,0.3); }
