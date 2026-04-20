@@ -311,6 +311,15 @@ function startEngine() {
         chartApp.updateTick(tickCandle, tickEma21, tickEma50, tickVol, tickBB, tickMacd);
         UIManager.updatePrice(tick.close);
       }
+
+      // Update Timeframe Matrix UI for all intervals in real-time
+      const currentSignalMap = {
+        'H4': indicatorsMap['4h'],
+        'H1': indicatorsMap['1h'],
+        'M15': indicatorsMap['15m'],
+        'M5': indicatorsMap['5m']
+      };
+      UIManager.updateMatrix(currentSignalMap, _lastScenarioResult ? _lastScenarioResult.trends : null);
     }
 
     // ── REAL-TIME SL/TP CHECK (every tick, only when signal ACTIVE) ───────
@@ -337,9 +346,8 @@ function startEngine() {
       };
       _lastScenarioResult = SignalEngine.analyzeScenarios(signalMap);
 
-      // Update UI
+      // Update UI (Scenarios only on close, Matrix already updated per-tick)
       UIManager.updateScenarios(_lastScenarioResult);
-      UIManager.updateMatrix(signalMap, _lastScenarioResult.trends);
 
       // Chart lines — mutually exclusive:
       // ENTRY ON  → hanya entry projection (SL/TP/zona entry) sesuai panel kanan
