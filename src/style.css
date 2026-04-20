@@ -506,177 +506,79 @@ h1, h2, h3 {
   opacity: 0.5;
 }
 
-@media (max-width: 1200px) {
-  .analysis-matrix { grid-template-columns: repeat(2, 1fr); }
-  .main-content-split { grid-template-columns: 1fr; }
-  .chart-panel { min-height: 450px; }
+/* ============================================================
+   CASCADE 3TF SIGNAL PANEL — v4.0
+   ============================================================ */
+.cascade-signal-card {
+  padding: 0 !important;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.25);
 }
-
-@media (max-width: 768px) {
-  .dashboard { padding: 0.5rem; gap: 0.5rem; }
-  .analysis-matrix { gap: 0.5rem; }
-  .tf-tag { font-size: 1.1rem; }
-  .tf-role { font-size: 0.65rem; }
-  .card-body { font-size: 0.85rem; }
-  
-  .chart-header {
-    flex-direction: column;
-    align-items: flex-start !important;
-    gap: 0.75rem;
-  }
-  
-  .header-controls {
-    width: 100%;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-  
-  .control-group, .indicator-group, .tf-selector {
-    padding: 0.15rem 0.35rem;
-  }
-  
-  .ctrl-btn, .ind-btn, .tf-btn {
-    padding: 0.3rem 0.6rem;
-    font-size: 0.8rem;
-  }
-
-  .entry-cards-wrapper {
-    grid-template-columns: 1fr !important;
-    gap: 0.75rem;
-  }
-
-  .cascade-signal-header { font-size: 0.9rem; padding: 0.75rem; }
-  .cascade-tf-row { font-size: 0.8rem; padding: 0.5rem 0.75rem; }
-  .check-item { font-size: 0.8rem; padding: 0.25rem 0.5rem; }
-  .cascade-level-row { font-size: 0.85rem; padding: 0.5rem 0; }
-  .cascade-level-label { font-size: 0.75rem; color: #bbb; }
-  .check-label { color: #ccc; }
-  .cascade-tf-role { color: #bbb; }
-  .cascade-tf-tag { font-size: 0.85rem; }
-  .cascade-waiting-msg { font-size: 0.8rem; padding: 0.6rem 0.75rem; }
-  
-  .active-levels {
-    flex-wrap: wrap;
-    gap: 0.5rem 1.2rem;
-    font-size: 0.9rem;
-  }
-  
-  .performance-stats {
-    padding-top: 0.75rem;
-  }
-  
-  .alert-section {
-    height: auto;
-    min-height: 100px;
-  }
-  .alert-console { font-size: 0.85rem; }
+.cascade-signal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.55rem 0.75rem;
+  font-family: var(--font-mono); font-weight: 700; font-size: 0.72rem; letter-spacing: 0.5px;
 }
+.cascade-header-sell { background: rgba(255,7,58,0.25); border-bottom: 1px solid rgba(255,7,58,0.45); color: #ff6688; }
+.cascade-header-buy  { background: rgba(0,255,65,0.18); border-bottom: 1px solid rgba(0,255,65,0.4); color: #00ff66; }
+.cascade-header-wait { background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--text-secondary); }
+.cascade-signal-label { font-size: 0.75rem; }
+.cascade-signal-tf    { font-size: 0.58rem; opacity: 0.6; letter-spacing: 1px; }
 
-.chart-container {
-  flex: 1;
-  width: 100%;
-  min-height: 500px;
-  background: var(--chart-bg);
+.cascade-progress-wrap {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
 }
+.cascade-progress-bar-bg { flex:1; height:4px; background:rgba(255,255,255,0.08); border-radius:2px; overflow:hidden; }
+.cascade-progress-fill   { height:100%; border-radius:2px; transition: width 0.5s ease, background 0.3s ease; }
+.cascade-progress-label  { font-family:var(--font-mono); font-size:0.6rem; color:var(--text-secondary); white-space:nowrap; }
 
-/* === HEDGE Signal Badge === */
-.signal-badge.hedge {
-  background: rgba(255, 170, 0, 0.2);
-  color: #ffaa00;
-  border-color: #ffaa00;
-  animation: pulse-hedge 1.5s infinite;
+.cascade-tf-list { display:flex; flex-direction:column; padding:0.3rem 0; }
+.cascade-tf-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:0.3rem 0.75rem; border-left:2px solid transparent;
+  font-family:var(--font-mono); font-size:0.65rem;
 }
+.cascade-tf-row.gate-met  { border-left-color:var(--neon-green); background:rgba(0,255,65,0.04); }
+.cascade-tf-row.gate-wait { border-left-color:rgba(255,255,255,0.1); }
+.cascade-tf-left  { display:flex; flex-direction:column; gap:0.1rem; }
+.cascade-tf-tag   { font-weight:700; font-size:0.7rem; color:var(--text-primary); }
+.cascade-tf-role  { font-size:0.55rem; color:var(--text-secondary); opacity:0.7; }
+.cascade-tf-right { display:flex; gap:0.5rem; align-items:center; }
+.cascade-trend         { font-weight:600; font-size:0.62rem; }
+.cascade-trend.bull    { color:var(--neon-green); }
+.cascade-trend.bear    { color:var(--signal-red); }
+.cascade-trend.neutral { color:var(--text-secondary); }
+.cascade-rsi  { font-size:0.58rem; color:var(--text-secondary); opacity:0.75; }
+.cascade-gate { font-size:0.6rem; color:var(--text-secondary); }
 
-@keyframes pulse-hedge {
-  0% { box-shadow: 0 0 0 0 rgba(255, 170, 0, 0.4); }
-  70% { box-shadow: 0 0 0 8px rgba(255, 170, 0, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(255, 170, 0, 0); }
+.cascade-entry-box {
+  display:flex; flex-direction:column; gap:0.2rem;
+  padding:0.4rem 0.75rem;
+  border-top:1px solid rgba(255,255,255,0.06);
+  background:rgba(0,0,0,0.15);
 }
+.cascade-level-row   { display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:0.65rem; }
+.cascade-level-label { color:var(--text-secondary); font-size:0.6rem; opacity:0.7; }
+.cascade-level-val   { font-weight:600; color:var(--text-primary); }
+.cascade-level-val.bull { color:var(--neon-green); }
+.cascade-level-val.bear { color:var(--signal-red); }
 
-/* === Hedge Card === */
-.card-hedge {
-  border-color: rgba(255, 170, 0, 0.5);
-  background: rgba(255, 170, 0, 0.08);
-  box-shadow: 0 0 15px rgba(255, 170, 0, 0.1);
+.cascade-waiting-msg {
+  padding:0.35rem 0.75rem;
+  font-family:var(--font-mono); font-size:0.62rem;
+  color:var(--text-secondary); font-style:italic;
+  border-top:1px solid rgba(255,255,255,0.04);
 }
-
-.card-hedge .card-instruction {
-  color: #ffaa00;
+.cascade-lock-badge {
+  margin:0.35rem 0.75rem 0.5rem;
+  padding:0.25rem 0.5rem; border-radius:4px;
+  font-family:var(--font-mono); font-size:0.65rem; font-weight:700; text-align:center;
 }
-
-.card-dir-badge.hedge { color: #ffaa00 !important; }
-.ez-val.hedge { color: #ffaa00 !important; }
-.type-val.hedge { color: #ffaa00 !important; }
-
-.badge-hedge {
-  background: rgba(255, 170, 0, 0.25);
-  color: #ffaa00;
-}
-
-/* === Waiting Card === */
-.card-waiting {
-  border-color: rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.02);
-  padding: 1rem;
-  text-align: center;
-}
-
-.card-waiting .card-note {
-  color: var(--text-secondary);
-  font-size: 0.78rem;
-  border-top: none;
-}
-
-/* === Zone Proximity Display === */
-.zone-proximity-display {
-  padding: 0.5rem 0.75rem;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 4px;
-  border: 1px solid #222;
-}
-
-.zone-status-display {
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  color: var(--text-secondary);
-}
-
-.zone-status-display.zone-support {
-  color: var(--neon-green);
-}
-
-.zone-status-display.zone-resistance {
-  color: var(--signal-red);
-}
-
-.zone-status-display.zone-approaching {
-  color: #ffaa00;
-}
-
-.zone-status-display.zone-between {
-  color: var(--text-secondary);
-}
-
-/* === Confidence Reasoning Colors === */
-.reasoning-list li.conf-positive {
-  color: var(--neon-green);
-  font-size: 0.72rem;
-}
-
-.reasoning-list li.conf-wait {
-  color: var(--text-secondary);
-  font-style: italic;
-}
-
-/* === Lean Trend Styling === */
-.trend-val.LEAN_BULL { color: rgba(0, 255, 65, 0.6); }
-.trend-val.LEAN_BEAR { color: rgba(255, 7, 58, 0.6); }
-
-/* ===================================================================
-   SIGNAL ENGINE v3 — Scenario-Based UI Styles
-   =================================================================== */
+.cascade-lock-badge.bull { background:rgba(0,255,65,0.12); color:var(--neon-green); border:1px solid rgba(0,255,65,0.3); }
+.cascade-lock-badge.bear { background:rgba(255,7,58,0.12); color:var(--signal-red); border:1px solid rgba(255,7,58,0.3); }
 
 /* Confirmation Checklist */
 .confirmation-list {
@@ -849,145 +751,468 @@ h1, h2, h3 {
   font-style: italic;
 }
 
-/* === Breakout BUY Card Styles === */
-.card-breakout-wait {
-  border-color: rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.02);
-  opacity: 0.75;
+/* === Zone Proximity Display === */
+.zone-proximity-display {
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  border: 1px solid #222;
 }
 
-.waiting-label.breakout-active {
-  color: var(--neon-green);
-  font-weight: 700;
-  animation: pulse-text 1.5s infinite;
-}
-
-@keyframes pulse-text {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
-}
-
-/* Two entry options in breakout card */
-.breakout-entries {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  margin: 0.3rem 0;
-  border-top: 1px dashed rgba(0, 255, 65, 0.2);
-  padding-top: 0.3rem;
-}
-
-.entry-option {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.zone-status-display {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
-}
-
-.entry-option-dim {
-  opacity: 0.65;
-}
-
-.entry-tag {
-  font-size: 0.58rem;
-  font-weight: bold;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  padding: 1px 5px;
-  border-radius: 2px;
-  background: rgba(255,255,255,0.06);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
   color: var(--text-secondary);
 }
 
-.entry-tag.bull {
-  background: rgba(0, 255, 65, 0.15);
+.zone-status-display.zone-support {
   color: var(--neon-green);
 }
 
-.entry-price {
-  font-weight: 700;
+.zone-status-display.zone-resistance {
+  color: var(--signal-red);
+}
+
+.zone-status-display.zone-approaching {
+  color: #ffaa00;
+}
+
+.zone-status-display.zone-between {
+  color: var(--text-secondary);
+}
+
+/* === Confidence Reasoning Colors === */
+.reasoning-list li.conf-positive {
+  color: var(--neon-green);
   font-size: 0.72rem;
+}
+
+.reasoning-list li.conf-wait {
   color: var(--text-secondary);
+  font-style: italic;
 }
 
-.entry-price.bull {
-  color: var(--neon-green);
+/* === Lean Trend Styling === */
+.trend-val.LEAN_BULL { color: rgba(0, 255, 65, 0.6); }
+.trend-val.LEAN_BEAR { color: rgba(255, 7, 58, 0.6); }
+
+.chart-container {
+  flex: 1;
+  width: 100%;
+  min-height: 500px;
+  background: var(--chart-bg);
 }
-
-
-
 
 /* ============================================================
-   CASCADE 3TF SIGNAL PANEL — v4.0
+   RESPONSIVE MEDIA QUERIES — MOBILE FIRST APPROACH
    ============================================================ */
-.cascade-signal-card {
-  padding: 0 !important;
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(0,0,0,0.25);
-}
-.cascade-signal-header {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 0.55rem 0.75rem;
-  font-family: var(--font-mono); font-weight: 700; font-size: 0.72rem; letter-spacing: 0.5px;
-}
-.cascade-header-sell { background: rgba(255,7,58,0.25); border-bottom: 1px solid rgba(255,7,58,0.45); color: #ff6688; }
-.cascade-header-buy  { background: rgba(0,255,65,0.18); border-bottom: 1px solid rgba(0,255,65,0.4); color: #00ff66; }
-.cascade-header-wait { background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--text-secondary); }
-.cascade-signal-label { font-size: 0.75rem; }
-.cascade-signal-tf    { font-size: 0.58rem; opacity: 0.6; letter-spacing: 1px; }
 
-.cascade-progress-wrap {
-  display: flex; align-items: center; gap: 0.5rem;
-  padding: 0.4rem 0.75rem;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+/* TABLET: 768px - 1199px */
+@media (max-width: 1200px) {
+  .analysis-matrix { grid-template-columns: repeat(2, 1fr); }
+  .main-content-split { grid-template-columns: 1fr; }
+  .chart-panel { min-height: 450px; }
 }
-.cascade-progress-bar-bg { flex:1; height:4px; background:rgba(255,255,255,0.08); border-radius:2px; overflow:hidden; }
-.cascade-progress-fill   { height:100%; border-radius:2px; transition: width 0.5s ease, background 0.3s ease; }
-.cascade-progress-label  { font-family:var(--font-mono); font-size:0.6rem; color:var(--text-secondary); white-space:nowrap; }
 
-.cascade-tf-list { display:flex; flex-direction:column; padding:0.3rem 0; }
-.cascade-tf-row {
-  display:flex; justify-content:space-between; align-items:center;
-  padding:0.3rem 0.75rem; border-left:2px solid transparent;
-  font-family:var(--font-mono); font-size:0.65rem;
-}
-.cascade-tf-row.gate-met  { border-left-color:var(--neon-green); background:rgba(0,255,65,0.04); }
-.cascade-tf-row.gate-wait { border-left-color:rgba(255,255,255,0.1); }
-.cascade-tf-left  { display:flex; flex-direction:column; gap:0.1rem; }
-.cascade-tf-tag   { font-weight:700; font-size:0.7rem; color:var(--text-primary); }
-.cascade-tf-role  { font-size:0.55rem; color:var(--text-secondary); opacity:0.7; }
-.cascade-tf-right { display:flex; gap:0.5rem; align-items:center; }
-.cascade-trend         { font-weight:600; font-size:0.62rem; }
-.cascade-trend.bull    { color:var(--neon-green); }
-.cascade-trend.bear    { color:var(--neon-red); }
-.cascade-trend.neutral { color:var(--text-secondary); }
-.cascade-rsi  { font-size:0.58rem; color:var(--text-secondary); opacity:0.75; }
-.cascade-gate { font-size:0.6rem; color:var(--text-secondary); }
+/* MOBILE: max 768px */
+@media (max-width: 768px) {
+  /* Adjust base spacing */
+  .dashboard { 
+    padding: 0.5rem; 
+    gap: 0.5rem; 
+  }
+  
+  /* TOP ANALYSIS MATRIX */
+  .analysis-matrix { 
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 0.5rem;
+    min-height: 200px;
+  }
+  
+  .analysis-card {
+    padding: 0.75rem;
+    gap: 0.4rem;
+  }
+  
+  .tf-tag { 
+    font-size: 0.95rem; 
+  }
+  
+  .tf-role { 
+    font-size: 0.6rem; 
+  }
+  
+  .card-body { 
+    font-size: 0.75rem; 
+  }
+  
+  /* CHART & PANEL */
+  .main-content-split { 
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  
+  .chart-panel { 
+    min-height: 350px;
+  }
+  
+  .final-signal-panel {
+    padding: 0.75rem;
+    gap: 0.5rem;
+  }
+  
+  /* HEADER CONTROLS */
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.75rem;
+  }
+  
+  .header-controls {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .control-group, .indicator-group, .tf-selector {
+    padding: 0.15rem 0.35rem;
+    gap: 0.3rem;
+  }
+  
+  .ctrl-btn, .ind-btn, .tf-btn {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.7rem;
+  }
 
-.cascade-entry-box {
-  display:flex; flex-direction:column; gap:0.2rem;
-  padding:0.4rem 0.75rem;
-  border-top:1px solid rgba(255,255,255,0.06);
-  background:rgba(0,0,0,0.15);
-}
-.cascade-level-row   { display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:0.65rem; }
-.cascade-level-label { color:var(--text-secondary); font-size:0.6rem; opacity:0.7; }
-.cascade-level-val   { font-weight:600; color:var(--text-primary); }
-.cascade-level-val.bull { color:var(--neon-green); }
-.cascade-level-val.bear { color:var(--neon-red); }
+  /* ENTRY CARDS WRAPPER */
+  .entry-cards-wrapper {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem;
+  }
 
-.cascade-waiting-msg {
-  padding:0.35rem 0.75rem;
-  font-family:var(--font-mono); font-size:0.62rem;
-  color:var(--text-secondary); font-style:italic;
-  border-top:1px solid rgba(255,255,255,0.04);
+  /* PRIMARY ENTRY CARD */
+  .entry-card {
+    padding: 0.55rem;
+    font-size: 0.7rem;
+    gap: 0.3rem;
+  }
+  
+  .entry-card .card-head {
+    padding-bottom: 0.35rem;
+  }
+  
+  .card-dir-badge {
+    font-size: 0.75rem;
+  }
+  
+  .strength-badge {
+    font-size: 0.6rem;
+  }
+  
+  .entry-zone-box {
+    padding: 0.3rem 0.4rem;
+  }
+  
+  .ez-label {
+    font-size: 0.58rem;
+  }
+  
+  .ez-val {
+    font-size: 0.85rem;
+  }
+  
+  .entry-card .card-body {
+    font-size: 0.7rem;
+    gap: 0.15rem;
+  }
+  
+  .entry-card .stat-line span:first-child {
+    font-size: 0.68rem;
+  }
+  
+  .entry-card .stat-line .val {
+    font-size: 0.75rem;
+  }
+
+  /* CASCADE SIGNAL CARD */
+  .cascade-signal-card {
+    margin-bottom: 0.5rem;
+  }
+  
+  .cascade-signal-header { 
+    font-size: 0.7rem; 
+    padding: 0.5rem 0.6rem;
+  }
+  
+  .cascade-signal-label { 
+    font-size: 0.7rem; 
+  }
+  
+  .cascade-signal-tf { 
+    font-size: 0.55rem; 
+  }
+  
+  .cascade-progress-label { 
+    font-size: 0.55rem; 
+  }
+  
+  .cascade-tf-row { 
+    font-size: 0.62rem; 
+    padding: 0.25rem 0.6rem;
+  }
+  
+  .cascade-tf-tag { 
+    font-size: 0.65rem; 
+  }
+  
+  .cascade-tf-role { 
+    font-size: 0.52rem; 
+  }
+  
+  .cascade-trend { 
+    font-size: 0.6rem; 
+  }
+  
+  .cascade-rsi { 
+    font-size: 0.55rem; 
+  }
+  
+  .cascade-gate { 
+    font-size: 0.55rem; 
+  }
+  
+  .cascade-entry-box {
+    padding: 0.35rem 0.6rem;
+  }
+  
+  .cascade-level-row { 
+    font-size: 0.62rem; 
+  }
+  
+  .cascade-level-label { 
+    font-size: 0.55rem; 
+  }
+  
+  .cascade-level-val { 
+    font-size: 0.7rem; 
+  }
+  
+  .cascade-waiting-msg { 
+    font-size: 0.6rem; 
+    padding: 0.3rem 0.6rem;
+  }
+  
+  .cascade-lock-badge { 
+    font-size: 0.6rem; 
+    margin: 0.3rem 0.6rem 0.4rem;
+  }
+
+  /* CONFIRMATION CHECKLIST */
+  .check-item {
+    gap: 0.2rem;
+    font-size: 0.62rem;
+  }
+  
+  .check-icon { 
+    font-size: 0.6rem; 
+  }
+  
+  .check-label { 
+    font-size: 0.62rem;
+    line-height: 1.3;
+  }
+
+  /* ACTIVE SIGNAL BANNER */
+  .active-signal-banner {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem;
+    gap: 0.5rem;
+  }
+  
+  .banner-icon {
+    font-size: 1rem;
+  }
+  
+  .banner-text {
+    font-size: 0.75rem;
+  }
+  
+  .banner-lock {
+    font-size: 0.65rem;
+  }
+
+  /* ACTIVE LEVELS */
+  .active-levels {
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  /* REASONING SECTION */
+  .reasoning-section h4 {
+    font-size: 0.7rem;
+    margin-bottom: 0.4rem;
+  }
+  
+  .summary-text {
+    font-size: 0.78rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .reasoning-list {
+    padding-left: 1rem;
+    font-size: 0.75rem;
+  }
+
+  /* PERFORMANCE STATS */
+  .performance-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.4rem;
+    padding-top: 0.6rem;
+  }
+  
+  .stat-box {
+    gap: 0.2rem;
+  }
+  
+  .stat-box .label { 
+    font-size: 0.55rem; 
+  }
+  
+  .stat-box .value { 
+    font-size: 0.8rem; 
+  }
+
+  /* ZONE PROXIMITY & CONFIDENCE */
+  .zone-proximity-display {
+    padding: 0.4rem 0.6rem;
+  }
+  
+  .zone-status-display {
+    font-size: 0.72rem;
+  }
+  
+  .confidence-section {
+    margin: 0.4rem 0;
+  }
+  
+  .conf-header {
+    font-size: 0.7rem;
+  }
+  
+  .conf-bar-bg {
+    height: 5px;
+  }
+  
+  .order-type-display {
+    font-size: 0.78rem;
+    padding: 0.4rem 0.6rem;
+  }
+
+  /* ALERT SECTION */
+  .alert-section {
+    height: auto;
+    min-height: 80px;
+    padding: 0.5rem;
+  }
+  
+  .alert-console { 
+    font-size: 0.75rem;
+    height: auto;
+    max-height: 60px;
+  }
+  
+  .alert-item {
+    margin-bottom: 0.15rem;
+  }
 }
-.cascade-lock-badge {
-  margin:0.35rem 0.75rem 0.5rem;
-  padding:0.25rem 0.5rem; border-radius:4px;
-  font-family:var(--font-mono); font-size:0.65rem; font-weight:700; text-align:center;
+
+/* EXTRA SMALL DEVICES: max 480px */
+@media (max-width: 480px) {
+  body {
+    font-size: 14px;
+  }
+  
+  .dashboard {
+    padding: 0.35rem;
+    gap: 0.35rem;
+  }
+
+  .analysis-matrix {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .analysis-card {
+    padding: 0.6rem;
+    gap: 0.3rem;
+  }
+
+  .tf-tag {
+    font-size: 0.9rem;
+  }
+
+  .card-body {
+    font-size: 0.7rem;
+  }
+
+  .main-content-split {
+    gap: 0.35rem;
+  }
+
+  .chart-panel {
+    min-height: 280px;
+  }
+
+  .final-signal-panel {
+    padding: 0.6rem;
+    gap: 0.4rem;
+  }
+
+  .header-controls {
+    gap: 0.35rem;
+  }
+
+  .entry-cards-wrapper {
+    gap: 0.4rem;
+  }
+
+  .entry-card {
+    padding: 0.5rem;
+    font-size: 0.68rem;
+  }
+
+  .cascade-signal-header {
+    font-size: 0.68rem;
+    padding: 0.45rem 0.5rem;
+  }
+
+  .cascade-tf-row {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.5rem;
+  }
+
+  .cascade-entry-box {
+    padding: 0.3rem 0.5rem;
+  }
+
+  .cascade-level-row {
+    font-size: 0.6rem;
+  }
+
+  .performance-stats {
+    gap: 0.3rem;
+  }
+
+  .alert-section {
+    min-height: 70px;
+    padding: 0.35rem;
+  }
+
+  .alert-console {
+    font-size: 0.7rem;
+    max-height: 50px;
+  }
 }
-.cascade-lock-badge.bull { background:rgba(0,255,65,0.12); color:var(--neon-green); border:1px solid rgba(0,255,65,0.3); }
-.cascade-lock-badge.bear { background:rgba(255,7,58,0.12); color:var(--neon-red);   border:1px solid rgba(255,7,58,0.3); }

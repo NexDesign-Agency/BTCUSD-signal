@@ -149,11 +149,22 @@ export class ChartComponent {
       this._entryLines.push(line);
     };
 
-    // ── SELL — entry zone band only (SL/TP di panel kanan, bukan chart)
+    // ── PRIMARY SCENARIO — label mengikuti direction (BUY atau SELL)
     if (sellScenario && sellScenario.entryLow) {
       const state = sellScenario.isAtZone ? 'AT ZONE' : 'WAITING';
-      add(sellScenario.entryHigh, 'rgba(255,7,58,0.9)', `▼ SELL ENTRY ${state}`, 2, 0);
-      add(sellScenario.entryLow,  'rgba(255,7,58,0.5)', `▼ SELL FLOOR`, 1, 2);
+      const isBuy = sellScenario.direction === 'BUY';
+      const mainColor = isBuy ? 'rgba(0,255,65,0.9)' : 'rgba(255,7,58,0.9)';
+      const subColor  = isBuy ? 'rgba(0,255,65,0.5)' : 'rgba(255,7,58,0.5)';
+      const icon      = isBuy ? '▲' : '▼';
+      const dir       = isBuy ? 'BUY' : 'SELL';
+      // Untuk SELL: entry = bot (low), roof = top (high)
+      // Untuk BUY:  entry = top (high), floor = bot (low)
+      const entryLine = isBuy ? sellScenario.entryHigh : sellScenario.entryLow;
+      const subLine   = isBuy ? sellScenario.entryLow  : sellScenario.entryHigh;
+      const limitLabel = isBuy ? 'FLOOR' : 'ROOF';
+      
+      add(entryLine, mainColor, `${icon} ${dir} ENTRY ${state}`, 2, 0);
+      add(subLine,   subColor,  `${icon} ${dir} ${limitLabel}`,   1, 2);
     }
 
     // ── BUY — watch zone atau breakout entry only (SL/TP di panel kanan)

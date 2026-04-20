@@ -714,7 +714,70 @@ export const SignalEngine = {
   },
 
   // =========================================================================
-  // SCENARIO BUILDER: BUY BREAKOUT
+  // SCENARIO BUILDER: BUY AT SUPPORT
+  // Mirror dari _buildSellScenario, tapi arah BUY dan zona Support
+  // =========================================================================
+  _buildBuyAtSupportScenario(support, currentPrice, indH1, indM15, indM5, atr, zoneProximity, rejectionM15) {
+    const minSLBuffer = Math.max(atr * 0.8, currentPrice * 0.005);
+    const entryLow  = support.zoneLow;
+    const entryHigh = support.zoneHigh;
+    const sl  = entryLow - minSLBuffer;
+    const tp1 = support.price + atr * 1.5;
+    const tp2 = support.price + atr * 3.0;
+    const risk = entryLow - sl;
+    const rr  = risk > 0 ? ((tp1 - entryLow) / risk).toFixed(1) : '0';
+
+    const isAtZone = currentPrice >= support.zoneLow && currentPrice <= support.zoneHigh;
+
+    const priceGate = {
+      label: `Price di zona S: $${entryLow.toFixed(0)}–$${entryHigh.toFixed(0)}`,
+      met: isAtZone,
+      current: `$${currentPrice.toFixed(0)}`
+    };
+
+    const rsiDir = indH1.rsiDirection ||
+      (indH1.prevRsi !== undefined && indH1.prevRsi < indH1.rsi ? 'Rising' : 'Falling');
+    const rsiH1Gate = {
+      label: `RSI H1 < 55 & berbalik naik`,
+      met: indH1.rsi < 55 && rsiDir === 'Rising',
+      current: `RSI H1: ${indH1.rsi ? indH1.rsi.toFixed(1) : '--'} (${rsiDir})`
+    };
+
+    const rsiM5Gate = {
+      label: `RSI M5 antara 28–55 (momentum cukup)`,
+      met: indM5.rsi > 28 && indM5.rsi < 55,
+      current: `RSI M5: ${indM5.rsi ? indM5.rsi.toFixed(1) : '--'}`
+    };
+
+    const candleGate = {
+      label: `Bullish candle M15 (engulfing/rejection)`,
+      met: isAtZone && rejectionM15.confirmed && rejectionM15.pattern.includes('BULLISH'),
+      current: rejectionM15.confirmed ? rejectionM15.pattern : 'Menunggu konfirmasi candle'
+    };
+
+    const confirmations = [priceGate, rsiH1Gate, rsiM5Gate, candleGate];
+    const metCount = confirmations.filter(c => c.met).length;
+    const readyToFire = priceGate.met && metCount >= 3;
+
+    const distToZone = currentPrice > entryHigh
+      ? (currentPrice - entryHigh).toFixed(0)
+      : 0;
+    const waitingFor = isAtZone
+      ? (readyToFire
+        ? '✅ Semua konfirmasi terpenuhi!'
+        : `Tunggu: ${confirmations.filter(c => !c.met).map(c => c.label).join(', ')}`)
+      : `Tunggu harga turun ke $${entryHigh.toFixed(0)} (-$${distToZone})`;
+
+    return {
+      direction: 'BUY',
+      zone: support,
+      entryLow, entryHigh, sl, tp1, tp2, rr,
+      confirmations, metCount, readyToFire, waitingFor, isAtZone,
+      strength: support.strength,
+      touches: support.touches
+    };
+  },
+
   // BUY hanya disarankan ketika candle body M15 close DI ATAS resistance zone.
   // Kalau belum breakout → tampilkan "WAITING FOR BREAKOUT".
   // Kalau breakout confirmed → saran BUY STOP (di atas zona) + BUY LIMIT (retest).
@@ -871,9 +934,28 @@ export const SignalEngine = {
       .filter(z => z.type === 'SUPPORT' && z.zoneHigh < currentPrice)
       .sort((a, b) => b.price - a.price)[0] || null;
 
-    const sellScenario = nearestR
+    // Bangun kedua skenario
+    const rawSellScenario = nearestR
       ? this._buildSellScenario(nearestR, currentPrice, indH1, indM15, indM5, atrH4, zoneProximity, rejectionM15)
       : null;
+
+    const rawBuyScenario = nearestS
+      ? this._buildBuyAtSupportScenario(nearestS, currentPrice, indH1, indM15, indM5, atrH4, zoneProximity, rejectionM15)
+      : null;
+
+    // Pilih scenario kiri berdasarkan H1 trend
+    // BULL → BUY at Support | BEAR → SELL at Resistance | SIDEWAYS → pilih zona terdekat
+    const h1Base = h1Trend.replace('LEAN_', '');
+    let sellScenario;
+    if (h1Base === 'BULL') {
+      sellScenario = rawBuyScenario || rawSellScenario;
+    } else if (h1Base === 'BEAR') {
+      sellScenario = rawSellScenario || rawBuyScenario;
+    } else {
+      const distR = nearestR ? Math.abs(nearestR.price - currentPrice) : Infinity;
+      const distS = nearestS ? Math.abs(nearestS.price - currentPrice) : Infinity;
+      sellScenario = distS < distR ? (rawBuyScenario || rawSellScenario) : (rawSellScenario || rawBuyScenario);
+    }
 
     const buyScenario = this._buildBreakoutBuyScenario(
       zones, currentPrice, indH1, indM15, indM5, atrH4
@@ -881,13 +963,14 @@ export const SignalEngine = {
 
     const priceContext = this._buildPriceContext(currentPrice, nearestS, nearestR, zoneProximity);
 
-    // Fire signal jika state SCANNING
+    // Fire signal jika state SCANNING — patuhi arah trend
     const s = this._scenarioState;
     if (s.phase === 'SCANNING') {
       if (sellScenario && sellScenario.readyToFire) {
-        s.phase = 'ACTIVE'; s.signal = 'SELL';
+        s.phase = 'ACTIVE'; s.signal = sellScenario.direction;
         s.sl = sellScenario.sl; s.tp1 = sellScenario.tp1; s.tp2 = sellScenario.tp2;
-        s.entryZonePrice = nearestR.price; s.m15Count = 0; s.lockedTime = Date.now();
+        s.entryZonePrice = sellScenario.zone ? sellScenario.zone.price : currentPrice;
+        s.m15Count = 0; s.lockedTime = Date.now();
       } else if (buyScenario && buyScenario.readyToFire && buyScenario.state === 'BREAKOUT') {
         s.phase = 'ACTIVE'; s.signal = 'BUY';
         s.sl = buyScenario.sl; s.tp1 = buyScenario.tp1; s.tp2 = buyScenario.tp2;

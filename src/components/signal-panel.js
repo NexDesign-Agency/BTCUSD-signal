@@ -24,7 +24,7 @@ export const UIManager = {
 
     const { phase, activeSignal: s, sellScenario, buyScenario, priceContext } = data;
 
-    this._updatePriceContext(priceContext, s);
+    this._updatePriceContext(priceContext, s, sellScenario);
     this._updateActiveBanner(s);
     this._updateScenarioCards(sellScenario, buyScenario, s, data);
 
@@ -37,19 +37,26 @@ export const UIManager = {
     if (sl) sl.innerText = stats.losses;
   },
 
-  _updatePriceContext(ctx, s) {
+  _updatePriceContext(ctx, s, sc) {
     const el = document.getElementById('zone-status');
     if (!el || !ctx) return;
 
     let text = '';
     let cls = 'zone-between';
+    const primaryDir = sc ? sc.direction : 'WAIT';
 
     if (ctx.position === 'AT_RESISTANCE') {
-      cls = 'zone-resistance';
-      text = `🔴 Price DI ZONA RESISTANCE — $${ctx.current.toFixed(0)}`;
+      // Jika kita menyarankan BUY, berada di resistance bukanlah alert merah (mungkin target)
+      const isSellSetup = primaryDir === 'SELL';
+      cls = isSellSetup ? 'zone-resistance' : 'zone-between';
+      const icon = isSellSetup ? '🔴' : '🟡';
+      text = `${icon} Price DI ZONA RESISTANCE — $${ctx.current.toFixed(0)}`;
     } else if (ctx.position === 'AT_SUPPORT') {
-      cls = 'zone-support';
-      text = `🟢 Price DI ZONA SUPPORT — $${ctx.current.toFixed(0)}`;
+      // Jika kita menyarankan SELL, berada di support bukanlah alert hijau (mungkin target)
+      const isBuySetup = primaryDir === 'BUY';
+      cls = isBuySetup ? 'zone-support' : 'zone-between';
+      const icon = isBuySetup ? '🟢' : '🟡';
+      text = `${icon} Price DI ZONA SUPPORT — $${ctx.current.toFixed(0)}`;
     } else {
       const rText = ctx.nearestR ? `R: $${ctx.nearestR.price.toFixed(0)} (+$${ctx.distToR ? ctx.distToR.toFixed(0) : '?'})` : '';
       const sText = ctx.nearestS ? `S: $${ctx.nearestS.price.toFixed(0)} (-$${ctx.distToS ? ctx.distToS.toFixed(0) : '?'})` : '';
@@ -146,34 +153,41 @@ export const UIManager = {
     if (!container) return;
 
     const renderSell = (sc) => {
-      if (!sc) return '<div class="entry-card card-waiting"><div class="card-note">Tidak ada zona resistance.</div></div>';
-      const isLocked = s.phase === 'ACTIVE' && s.signal === 'SELL';
-      const isOtherLocked = s.phase === 'ACTIVE' && s.signal === 'BUY';
+      if (!sc) return '<div class="entry-card card-waiting"><div class="card-note">Tidak ada zona S/R terdekat.</div></div>';
+      const isBuy = sc.direction === 'BUY';
+      const dir   = isBuy ? 'BUY' : 'SELL';
+      const icon  = isBuy ? '▲' : '▼';
+      const valCls = isBuy ? 'bull' : 'bear';
+      const cardBase = isBuy ? 'card-primary-buy' : 'card-primary-sell';
+      const isLocked = s.phase === 'ACTIVE' && s.signal === dir;
+      const isOtherLocked = s.phase === 'ACTIVE' && s.signal !== dir;
       const cardClass = isLocked
-        ? 'card-primary-sell active-locked'
+        ? `${cardBase} active-locked`
         : isOtherLocked
           ? 'card-dimmed'
-          : 'card-primary-sell';
+          : cardBase;
       const checklist = sc.confirmations.map(c => `
         <li class="check-item ${c.met ? 'met' : 'unmet'}">
           <span class="check-icon">${c.met ? '✅' : '⬜'}</span>
           <span class="check-label">${c.label}</span>
         </li>`).join('');
       const progressPct = Math.round((sc.metCount / sc.confirmations.length) * 100);
+      const barColor = progressPct === 100 ? (isBuy ? '#00ff41' : '#ff073a') : '#ffaa00';
+      const zoneType = isBuy ? 'Support' : 'Resistance';
       return `
         <div class="entry-card ${cardClass}">
           <div class="card-head">
-            <span class="card-dir-badge bear">▼ SELL${isLocked ? ' 🔒' : ''}</span>
-            <span class="card-zone-strength">${sc.touches}×</span>
+            <span class="card-dir-badge ${valCls}">${icon} ${dir}${isLocked ? ' 🔒' : ''}</span>
+            <span class="card-zone-strength">${sc.touches}× ${zoneType}</span>
           </div>
           <div class="waiting-label">${isLocked ? '✅ Aktif' : sc.waitingFor}</div>
           <div class="conf-progress-bar">
-            <div class="conf-progress-fill" style="width:${progressPct}%;background:${progressPct === 100 ? '#ff073a' : '#ffaa00'}"></div>
+            <div class="conf-progress-fill" style="width:${progressPct}%;background:${barColor}"></div>
           </div>
           <ul class="confirmation-list">${checklist}</ul>
           <div class="entry-zone-box">
             <span class="ez-label">ZONA</span>
-            <span class="ez-val bear">$${sc.entryLow.toFixed(0)}–$${sc.entryHigh.toFixed(0)}</span>
+            <span class="ez-val ${valCls}">$${sc.entryLow.toFixed(0)}–$${sc.entryHigh.toFixed(0)}</span>
           </div>
           <div class="card-body">
             <div class="stat-line"><span>SL:</span><span class="val bear">$${sc.sl.toFixed(0)}</span></div>
@@ -269,18 +283,29 @@ export const UIManager = {
       const sc  = sellScenario;
       const bsc = buyScenario;
 
-      if ((signalDir === 'SELL' || (isActiveLocked && s.signal === 'SELL')) && sc) {
+      if ((signalDir === 'SELL' || (isActiveLocked && s.signal === 'SELL')) && sc && sc.direction !== 'BUY') {
         entryLevel = `$${sc.entryHigh ? sc.entryHigh.toFixed(0) : '--'}–$${sc.entryLow ? sc.entryLow.toFixed(0) : '--'}`;
         slLevel  = sc.sl  ? `$${sc.sl.toFixed(0)}`  : '--';
         tp1Level = sc.tp1 ? `$${sc.tp1.toFixed(0)}` : '--';
         tp2Level = sc.tp2 ? `$${sc.tp2.toFixed(0)}` : '--';
         rrVal    = sc.rr  ? `1:${sc.rr}` : '--';
-      } else if ((signalDir === 'BUY' || (isActiveLocked && s.signal === 'BUY')) && bsc && bsc.entryBuyStop) {
-        entryLevel = `$${bsc.entryBuyStop.toFixed(0)}`;
-        slLevel  = bsc.sl  ? `$${bsc.sl.toFixed(0)}`  : '--';
-        tp1Level = bsc.tp1 ? `$${bsc.tp1.toFixed(0)}` : '--';
-        tp2Level = bsc.tp2 ? `$${bsc.tp2.toFixed(0)}` : '--';
-        rrVal    = bsc.rr  ? `1:${bsc.rr}` : '--';
+      } else if ((signalDir === 'BUY' || (isActiveLocked && s.signal === 'BUY'))) {
+        // Pilih sumber data: Prioritaskan breakout (bsc) jika sudah aktif, 
+        // kalau tidak gunakan skenario utama (sc) jika itu adalah BUY
+        const src = (bsc && bsc.state === 'BREAKOUT') ? bsc : (sc && sc.direction === 'BUY' ? sc : null);
+        
+        if (src) {
+          if (src.entryBuyStop) {
+            entryLevel = `$${src.entryBuyStop.toFixed(0)}`;
+          } else if (src.entryLow && src.entryHigh) {
+            entryLevel = `$${src.entryLow.toFixed(0)}–$${src.entryHigh.toFixed(0)}`;
+          }
+          
+          slLevel  = src.sl  ? `$${src.sl.toFixed(0)}`  : '--';
+          tp1Level = src.tp1 ? `$${src.tp1.toFixed(0)}` : '--';
+          tp2Level = src.tp2 ? `$${src.tp2.toFixed(0)}` : '--';
+          rrVal    = src.rr  ? `1:${src.rr}` : '--';
+        }
       } else if (isActiveLocked) {
         slLevel  = s.sl  ? `$${s.sl.toFixed(0)}`  : '--';
         tp1Level = s.tp1 ? `$${s.tp1.toFixed(0)}` : '--';
